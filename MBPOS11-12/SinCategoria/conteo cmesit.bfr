@@ -1,0 +1,537 @@
+CONTEOCMESIT
+
+Forma==15885==7560==5220==3105====$$-$$DBCombo==1395==315==12250==3250==DBLinea==Linea==13$$-$$Grid==11745==5125==375==1750==Grid====14$$-$$CheckBox==1770==500==12500==1375==chkLector==Activa Lector (F4)==15$$-$$TextBox==2500==345==250==500==txtArticulo====0$$-$$CommandButton==930==500==9125==375==cmdContar==Contar==16$$-$$Label==2040==195==12375==375==lblLabel0==Crear Lista Comparativa==17$$-$$TextBox==5000==345==3000==500==txtDescrip====1$$-$$TextBox==800==345==8125==500==txtCant====2$$-$$CommandButton==1100==500==10250==375==cmdImprimir==Imprimir==18$$-$$TextBox==6000==345==250==1250==txtObserv====5$$-$$CommandButton==915==375==6500==1250==cmdObserv==Guardar==6$$-$$CommandButton==930==500==9125==1000==cmdCorregir==Corregir==19$$-$$CommandButton==1035==375==14500==250==cmdCrear==Crear==20$$-$$Label==1425==195==12870==870==lblLabel1==Reiniciar Conteo==21$$-$$CommandButton==1005==375==14500==750==cmdReset==Limpia==22$$-$$CommandButton==1035==375==14500==1375==cmdUpdate==Actualizar==23$$-$$CheckBox==1770==500==10250==1000==chkRevu==Revisión Unica==24$$-$$Label==660==195==255==255==lblLabel2==Articulo==25$$-$$Label==1005==195==3120==255==lblLabel3==Descripción==26$$-$$Label==615==195==8250==255==lblLabel4==Conteo==27$$-$$Label==1065==195==255==1005==lblLabel5==Observación==28$$-$$Label==1680==195==13005==2250==lblLabel6==Filtro Administrativo==29$$-$$Label==480==195==12630==2745==lblLabel8==Linea==30$$-$$DBCombo==1395==315==14125==3250==DBMarca==Marca==31$$-$$Label==540==195==14370==2745==lblLabel9==Marca==32$$-$$Label==885==195==12255==3870==lblLabel10==Existencia==33$$-$$TextBox==800==345==12375==4250==txtexis====34$$-$$TextBox==800==345==13500==4250==txtconteo====35$$-$$Label==615==195==13500==3870==lblLabel11==Conteo==36$$-$$TextBox==765==345==14625==4250==txtdif====37$$-$$Label==885==195==14625==3870==lblLabel12==Diferencia==38$$-$$CommandButton==930==345==13500==5625==cmdBuscar==Buscar==39$$-$$Label==1275==195==12375==4755==lblLabel13==Avanzado SQL==40$$-$$TextBox==2500==345==12750==5125==txtsql====41$$-$$
+dim busca
+
+sub Form_load
+
+    Set rstLineas = CreaRecordSet("SELECT linea FROM lineas ORDER BY linea", Ambiente.Connection )
+    Set rstMarca = CreaRecordSet("SELECT Marca FROM Marcas ORDER BY marca", Ambiente.Connection )
+
+    Set dblinea.RowSource = rstLineas
+    dblinea.listfield = "Linea" 
+
+    Set dbmarca.RowSource = rstMarca
+    dbmarca.listfield = "Marca" 
+
+
+call revisa_bd()
+'call fillGrid()
+
+end sub
+
+Sub Button_click()
+
+	Select Case ControlEvento.Tag
+
+		    Case "cmdContar"
+		
+			call aplica_conteo ()
+			call fillgrid () 
+			call limpia_campos()
+			txtArticulo.SetFocus 
+		    Case "cmdImprimir"
+		
+				EjecutaReporte "IMPRIMEGRID"       
+          
+			 Case "cmdObserv"                                       
+ 
+                CALL Agrega_obser()
+
+			 Case "cmdCorregir"
+				
+				CALL Aplica_Correccion ()
+
+			 Case "cmdCrear"
+				
+				CALL Crea_Lista()
+				call Fillgrid()
+			 Case "cmdReset"
+
+				if msgbox ("Esta operacion eliminara por completo el conteo de Inventario"& vbNewLine &"¿Estás seguro que deseas continuar?",32+vbyesno,"Genera Lista de comparación")=vbyes then
+				                   if msgbox ("Despues de esta operacion no podra recuperar los datos"& vbNewLine &"¿Estás seguro que deseas continuar?",32+vbyesno,"Genera Lista de comparación")=vbyes then
+						                   if msgbox ("Por motivos de seguridad se necesita responder la ultima pregunta"& vbNewLine &"¿Deseas cancelar la operación?",32+vbyesno,"Genera Lista de comparación")=vbno then
+      							
+						
+						                ambiente.connection.execute("DROP TABLE CMESITINV") 
+										call revisa_bd()
+						 				call Fillgrid()
+										msgbox "EL CONTEO DE INVENTARIO SE ELIMINO CON EXITO",64
+											else
+										exit sub
+											end if
+									else
+									exit sub
+									end if  
+				else
+					exit sub
+				end if
+
+			 Case "cmdUpdate"
+
+				Call fillgrid()  
+
+			case "cmdBuscar"
+				call buscar()
+	end select
+  
+END SUB  
+
+Sub  aplica_conteo () 
+
+if txtArticulo="" then
+Msgbox "Introduzca un Articulo" 
+exit sub
+end if
+
+if txtDescrip="" then
+Msgbox "Introduzca un Articulo"  
+exit sub
+end if
+
+if txtCant="" then
+Msgbox "Introduzca la cantidad de conteo"  
+exit sub
+end if
+
+if not IsNumeric(txtCant) then
+Msgbox "Introduzca la cantidad de conteo valida"  
+exit sub
+end if
+
+
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+set rstconteo = CreaRecordset ("Select CMESITINV.Articulo,conteo from CMESITINV where Articulo='"&txtArticulo&"' ",Ambiente.Connection)
+set rstprodinfo = CreaRecordset ("Select Prods.Articulo,Descrip,Linea,Marca,Existencia from Prods where Articulo='"&txtArticulo&"'",Ambiente.Connection)
+
+if rstprodinfo.eof then
+Msgbox "No se encontro el articulo dentro del catalogo"  
+exit sub
+end if
+
+    If rstconteo.eof then
+       Query.StrState = "INSERT"
+       Query.addfield "CMESITINV", "Articulo", txtArticulo
+	Cant=val2(txtCant)
+    Dif= val2(rstprodinfo("Existencia")) - cant
+
+    Else
+       Query.strState = "UPDATE"
+       Query.Condition = " Articulo = '" & txtArticulo &"'"
+	Cant=val2(rstconteo("conteo"))+val2(txtCant)
+    Dif= val2(rstprodinfo("Existencia")) - cant
+
+
+    End if    
+
+    Query.addfield "CMESITINV", "Descrip", rstprodinfo("Descrip")
+    Query.addfield "CMESITINV", "Linea", rstprodinfo("Linea")
+    Query.addfield "CMESITINV", "Marca", rstprodinfo("Marca")
+    Query.addfield "CMESITINV", "Existencia", rstprodinfo("Existencia")
+    Query.addfield "CMESITINV", "Conteo", Cant
+    Query.addfield "CMESITINV", "Diferencia", Dif
+    Query.addfield "CMESITINV", "Fecha", Date
+    Query.addfield "CMESITINV", "Observ", txtObserv
+    Query.CreateQuery
+    Query.Execute
+
+
+end sub
+
+Sub  Agrega_obser()
+
+if txtArticulo="" then
+Msgbox "Introduzca un Articulo" 
+exit sub
+end if
+
+if txtDescrip="" then
+Msgbox "Introduzca un Articulo"  
+exit sub
+end if
+
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+set rstconteo = CreaRecordset ("Select CMESITINV.Articulo,conteo from CMESITINV where Articulo='"&txtArticulo&"' ",Ambiente.Connection)
+set rstprodinfo = CreaRecordset ("Select Prods.Articulo,Descrip,Linea,Marca,Existencia from Prods where Articulo='"&txtArticulo&"'",Ambiente.Connection)
+
+if rstprodinfo.eof then
+Msgbox "No se encontro el articulo dentro del catalogo"  
+exit sub
+end if
+
+    If rstconteo.eof then
+ 
+		msgbox "No se encontro el Articulo en el Catalogo de Conteo",64     
+        exit sub
+    Else
+       Query.strState = "UPDATE"
+       Query.Condition = " Articulo = '" & txtArticulo &"'"
+
+
+
+    End if    
+
+    Query.addfield "CMESITINV", "Observ", txtObserv
+    Query.CreateQuery
+    Query.Execute
+
+chkRevu.value=1
+call fillgrid 
+
+
+
+end sub
+
+Sub  Aplica_Correccion ()
+
+end sub
+ 
+Sub Crea_Lista()
+
+	if msgbox ("Esta operacion creara una lista con el catalgo completo para su comparación y puede tardar en el proceso"& vbNewLine &"¿Estás seguro que deseas continuar?",32+vbyesno,"Genera Lista de comparación")=vbyes then
+	
+	set rstllena = CreaRecordset ("Select * from prods",Ambiente.Connection)
+	
+		While  not rstllena.eof
+		on error resume next
+			txtarticulo=rstllena("Articulo")
+			txtDescrip=rstllena("Descrip")
+			txtcant= 0
+			call aplica_conteo ()
+			rstllena.movenext
+		wend
+		ambiente.connection.execute("Update CMESITINV set FECHA='01/01/2000'")
+	else
+		exit sub
+	end if
+End Sub
+
+sub buscar()
+
+if txtArticulo="" then
+AR=""
+else
+AR=" and Articulo="& txtArticulo &" "
+end if
+
+if txtexis="" then
+EX=""
+else
+EX=" and existencia"& txtexis &" "
+end if
+
+if txtconteo="" then
+CO=""
+else
+CO=" and Conteo"& txtconteo  &" "
+end if
+
+if txtdif="" then
+DI=""
+else
+DI=" and Diferencia"& txtdif &" "
+end if
+
+if DBLinea="Linea" or DBLinea="" then
+LI=""
+else
+LI=" and Linea='"& DBLinea.text &"' "
+end if  
+
+if DBMarca="Marca" or DBMarca=""then
+MA=""
+else
+MA=" and Marca='"& DBMarca.text &"' "
+end if 
+
+
+
+    Grid.Clear True
+    Grid.AddColumn ,"Articulo"           , 0   ,,  120 
+    Grid.AddColumn ,"Descripción"            , 0   ,,  200
+    Grid.AddColumn ,"Linea"         , 0   ,,  100
+    Grid.AddColumn ,"Marca"           , 0   ,,  100 
+    Grid.AddColumn ,"Exit"      , 0   ,,  40
+    Grid.AddColumn ,"Cont"    , 0   ,,  40
+    Grid.AddColumn ,"Dif"    , 0   ,,  40
+    Grid.AddColumn ,"Observaciones"    , 0   ,,  200
+                                                        
+   bolColor = True 
+
+
+	set rstconteo = CreaRecordset ("Select * from CMESITINV Where linea<>'SYS' "&AR&" "&EX&" "&CO&" "&DI&" "&LI&"  "&MA&" ",Ambiente.Connection)
+
+  
+    While Not rstconteo.EOF 
+on error resume next
+
+          Grid.AddRow           
+
+          If bolColor Then
+             intColor = vbGreen
+             bolColor = False
+          Else
+             intColor = vbWhite
+             bolColor = True
+          End If                      
+
+'          If rstKardex("ent_sal")="E" Then
+'				MOV= rstKardex("CANTIDAD")
+'             intColor =rgb(0,191,255)
+'          End If 
+'
+'          If rstKardex("ent_sal")="S" Then
+'				MOV= val2(rstKardex("CANTIDAD"))*-1
+'             intColor = rgb(255,218,185)
+'          End If 
+
+
+          Grid.CellDetails Grid.Rows, 01, rstconteo("Articulo"), 0
+          Grid.Cell( Grid.Rows, 01 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 02, rstconteo("Descrip"), 0
+          Grid.Cell( Grid.Rows, 02 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 03, rstconteo("Linea"), 0
+          Grid.Cell( Grid.Rows, 03 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 04,rstconteo("Marca") , 0
+          Grid.Cell( Grid.Rows, 04 ).BackColor = intColor
+                                                                  
+          Grid.CellDetails Grid.Rows, 05,rstconteo("Existencia"), 0
+          Grid.Cell( Grid.Rows, 05 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 06, rstconteo("Conteo"), 0
+          Grid.Cell( Grid.Rows, 06 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 07, rstconteo("Diferencia"), 0
+          Grid.Cell( Grid.Rows, 07 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 08, rstconteo("Observ"), 0
+          Grid.Cell( Grid.Rows, 08 ).BackColor = intColor
+
+
+          rstconteo.MoveNext
+    Wend
+    
+
+
+end Sub
+
+
+
+Sub fillGrid()
+
+    Grid.Clear True
+    Grid.AddColumn ,"Articulo"           , 0   ,,  120 
+    Grid.AddColumn ,"Descripción"            , 0   ,,  200
+    Grid.AddColumn ,"Linea"         , 0   ,,  100
+    Grid.AddColumn ,"Marca"           , 0   ,,  100 
+    Grid.AddColumn ,"Exit"      , 0   ,,  40
+    Grid.AddColumn ,"Cont"    , 0   ,,  40
+    Grid.AddColumn ,"Dif"    , 0   ,,  40
+    Grid.AddColumn ,"Observaciones"    , 0   ,,  200
+                                                        
+   bolColor = True 
+
+if chkRevu.value=0 then
+	set rstconteo = CreaRecordset ("Select * from CMESITINV",Ambiente.Connection)
+elseif chkRevu.value=1 then
+	set rstconteo = CreaRecordset ("Select * from CMESITINV Where Articulo='"&txtArticulo&"'",Ambiente.Connection)
+end if
+  
+    While Not rstconteo.EOF 
+
+          Grid.AddRow           
+
+          If bolColor Then
+             intColor = vbGreen
+             bolColor = False
+          Else
+             intColor = vbWhite
+             bolColor = True
+          End If                      
+
+'          If rstKardex("ent_sal")="E" Then
+'				MOV= rstKardex("CANTIDAD")
+'             intColor =rgb(0,191,255)
+'          End If 
+'
+'          If rstKardex("ent_sal")="S" Then
+'				MOV= val2(rstKardex("CANTIDAD"))*-1
+'             intColor = rgb(255,218,185)
+'          End If 
+
+
+          Grid.CellDetails Grid.Rows, 01, rstconteo("Articulo"), 0
+          Grid.Cell( Grid.Rows, 01 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 02, rstconteo("Descrip"), 0
+          Grid.Cell( Grid.Rows, 02 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 03, rstconteo("Linea"), 0
+          Grid.Cell( Grid.Rows, 03 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 04,rstconteo("Marca") , 0
+          Grid.Cell( Grid.Rows, 04 ).BackColor = intColor
+                                                                  
+          Grid.CellDetails Grid.Rows, 05,rstconteo("Existencia"), 0
+          Grid.Cell( Grid.Rows, 05 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 06, rstconteo("Conteo"), 0
+          Grid.Cell( Grid.Rows, 06 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 07, rstconteo("Diferencia"), 0
+          Grid.Cell( Grid.Rows, 07 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 08, rstconteo("Observ"), 0
+          Grid.Cell( Grid.Rows, 08 ).BackColor = intColor
+
+
+          rstconteo.MoveNext
+    Wend
+    
+End Sub
+
+
+
+
+Sub Form_KeyDown()
+         
+    ' Cuando presionamos la tecla F5
+    if KeyCodeForm = 116 Then
+
+       Controles("txtArticulo").SetFocus 'Colocamos foco en artículo
+    end if
+
+    if KeyCodeForm = 115 Then
+Select case chklector
+		case 0
+			chklector.value =1
+		case 1
+			chklector.value =0
+end select
+
+    end if
+
+End Sub
+
+Sub Text_KeyDown()
+    Dim rstProds,Busqueda
+
+    if ControlEvento.Tag = "txtArticulo" Then
+       If KeyCode = 40 Then
+          Set Busqueda = CreateObject ("MyBBusquedaArticulos.BusquedaArticulos")
+          Set Busqueda.Ambiente = Ambiente
+          Set Busqueda.Control = txtArticulo
+          Busqueda.MuestraForma
+          Set Busqueda = Nothing
+          txtArticulo.SetFocus
+          Exit Sub
+       End if
+    end if
+
+End Sub     
+
+Sub Text_LostFocus()
+
+Set rstclaveok = CreaRecordset ("Select articulo from clavesadd where clave = '"&txtArticulo&"' ",Ambiente.Connection)
+if  not rstclaveok.eof then
+txtArticulo= rstclaveok("articulo")
+end if
+
+
+
+
+    If ControlEvento.Tag = "txtArticulo" Then
+
+       Set rstProds = Rst ("SELECT * FROM prods WHERE articulo = '" & Controles("txtArticulo").Text &"'", Ambiente.Connection)
+       SET RSTMOVSINVUM= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&articulo&"'  )AND ARTICULO='"&articulo&"' ", AMBIENTE.CONNECTION)
+
+       If not rstProds.EOF Then 
+
+			txtArticulo=UCASE(rstprods("ARTICULO"))
+			txtDescrip = UCASE(rstprods("Descrip"))
+		set rstobserv = CreaRecordset ("Select observ from CMESITINV where articulo ='"&txtArticulo&"'",Ambiente.Connection) 
+			if  not rstobserv.eof  then
+				txtObserv= rstobserv(0)
+			end if
+
+		if chklector.value=1 then
+			txtCant=1
+			call aplica_conteo ()
+			call fillgrid ()
+			call limpia_campos()
+			txtArticulo.setfocus
+
+		elseIF chklector.value=0 then
+             txtCant.setfocus
+		end if
+
+		END IF
+		end if
+
+
+
+
+
+end sub   
+
+Sub EjecutaReporte(reporte)
+
+    Dim rstReporte
+
+    Set rstReporte = Rst("SELECT * FROM formatosdelta WHERE formato = '" & reporte & "'", Ambiente.Connection )
+
+    If rstReporte.EOF Then
+       Exit Sub
+    End If
+
+	Script.Preview rstReporte("tipo"), rstReporte("codigo"), Ambiente, Me, rstReporte("formato"), ""
+
+
+End Sub 
+
+sub revisa_bd()
+	set rstbds = CreaRecordSet ("Select * From INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CMESITINV'",Ambiente.Connection)
+
+if rstbds.eof then
+Ambiente.Connection.Execute ("CREATE TABLE dbo.CMESITINV "&_
+"   (Articulo varchar(100) NULL,"&_
+"    Descrip varchar(200) NULL,"&_
+"    Linea varchar(50) NULL, "&_
+"    Marca varchar(50) NULL, "&_
+"	Existencia float NULL,     "&_
+"	Conteo float NULL, "&_
+"	Diferencia float NULL,"&_
+"	Fecha datetime NULL,          "&_
+"	Observ varchar(200) NULL)")
+end if
+end sub 
+
+sub check_Click()
+
+
+    If ControlEvento.Tag = "chkLector" Then
+		If chklector.value=1 then
+		chkRevu.value =1
+		Msgbox "Se activo 'Revisión Unica' para optimizar el proceso de captura",64
+		txtArticulo.setfocus
+		exit sub
+		end if
+ 	end if
+end sub   
+
+Sub limpia_campos()
+txtarticulo=""
+txtDescrip=""
+txtCant=""
+txtObserv=""
+end sub
+
+
+

@@ -1,0 +1,557 @@
+AJUSTEINVENTACTI
+
+Forma==8880==7905==-71025==3840====$$-$$DBCombo==1900==315==125==1375==DBlinea====2$$-$$Grid==6360==4000==125==3125==Grid====18$$-$$TextBox==3630==285==125==375==articulo====1$$-$$CommandButton==1725==690==6750==875==cmdAplicar==&APLICAR==0$$-$$Label==945==195==120==75==lblLabel1==ARTICULO==12$$-$$Label==1110==195==1005==870==LBEXIST==EXISTENCIA==13$$-$$TextBox==690==285==125==875==txter====14$$-$$Label==75==195==120==2295==lbdatos====15$$-$$TextBox==915==285==5750==375==txtmovim====16$$-$$Label==1695==195==3870==375==lblLabel3==TIPO MOVIMIENTO==17$$-$$Label==555==195==2130==1425==lblLabel4==LINEA==19$$-$$CommandButton==1695==250==6750==375==cmdKardex==&KARDEX==20$$-$$Label==660==195==2130==1950==lblMarca==MARCA==21$$-$$CommandButton==1725==690==6750==1875==cmdalta==A&RTICULOS==22$$-$$DBCombo==1900==315==125==1875==DBmarca====23$$-$$CommandButton==1725==690==6750==2875==cmdcaptura==ACTIVA &CAPTURA==24$$-$$Label==390==195==120==2745==lblUPC==UPC==25$$-$$CommandButton==1725==690==6750==3875==cmdEtiqueta==&ETIQUETAS==26$$-$$CommandButton==1725==690==6750==5250==cmdlm==Actua&liza Linea y Marca==27$$-$$
+'=======================================================================================
+'[[[CMESIT CONSULTORIA Y MANEJO DE ERRORES CON SOLUCIONES INFORMATICAS Y TECNOLOGICAS]]]
+'=======================================================================================
+'      DRISTRIBUCION DE SOLUCIONES INFORMATICAS Y TECNOLOGICAS cmesit@gmail.com
+'---------------------------------------------------------------------------------------
+'===              Forma para la Correcion de Existencia y Linea de Inventario         ==
+'===   Con ajsute directo a Tabla de Movsinv, Existenciaalmacen y Prods y filtro      ==
+'===       segun tipo_movim para los ajustes de linea                                 ==
+'---------------------------------------------------------------------------------------
+'|||||||| VERSION ||  1.2                         
+'||||||   FECHA ||||  28/09/2014                 
+'||DESARROLLADOR||||ING. ERNESTO GLEZ. (KIEMTO)
+'=======================================================================================
+' [[[[[[[[[[[[MODIFICADO]]]]]]]] 
+' [[[[[[VERSION ]]]]]] 
+' [[[[[ FECHA   ]]]]]]
+' [[ DESARROLLADOR ]]] 
+
+DIM ES
+DIM AJ
+DIM ER
+DIM UPC
+DIM COSTO
+DIM PRECIO
+DIM ENTCONSEC 
+DIM MOV
+DIM CAP
+txtmovim.text= "AS"
+
+
+    Me.Caption="Ajuste de Inventario Directo a Tablas by CMESIT"
+	Me.BackColor = RGB(30,144,255)
+	lblLabel1.Font="Futura Md BT"
+	lblLabel1.Fontsize=10
+	lblLabel1.ForeColor=vbwhite
+	lblLabel3.Font="Futura Md BT"
+	lblLabel3.Fontsize=10
+	lblLabel3.ForeColor=vbwhite
+	lblLabel4.Font="Futura Md BT"
+	lblLabel4.Fontsize=10
+	lblLabel4.ForeColor=vbwhite
+	lbdatos.Font="Futura Md BT"
+	lbdatos.Fontsize=10
+	lbdatos.ForeColor=vbwhite
+	lbexist.Font="Futura Md BT"
+	lbexist.Fontsize=10
+	lbexist.ForeColor=vbwhite
+	lblMarca.Font="Futura Md BT"
+	lblMarca.Fontsize=10
+	lblMarca.ForeColor=vbwhite
+	LBLUPC.Font="Futura Md BT"
+	LBLUPC.Fontsize=10
+	LBLUPC.ForeColor=vbwhite
+	
+	articulo.Font="Futura Md BT"
+	articulo.Fontsize=10
+	txter.Font="Futura Md BT"
+	txter.Fontsize=10
+	txtmovim.Font="Futura Md BT"
+	txtmovim.Fontsize=10
+	
+	articulo.tabindex=0
+	txter.tabindex=1
+	dblinea.tabindex=2
+    dbmarca.tabindex=3
+
+	cmdaplicar.backcolor=rgb(216,191,216)
+
+
+SET RSTMOVSINV= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&articulo&"'  AND (TIPO_MOVIM='COM' OR TIPO_MOVIM='"&txtmovim&"') )AND ARTICULO='"&articulo&"' ", AMBIENTE.CONNECTION)
+SET RSTENT= CREARECORDSET ("SELECT * FROM ENTRADAS WHERE ENTRADA='1' ", AMBIENTE.CONNECTION)
+    Set rstLineas = CreaRecordSet("SELECT linea FROM lineas ORDER BY linea", Ambiente.Connection )
+    Set rstMarca = CreaRecordSet("SELECT Marca FROM Marcas ORDER BY marca", Ambiente.Connection )
+
+    Set dblinea.RowSource = rstLineas
+    dblinea.listfield = "Linea" 
+
+    Set dbmarca.RowSource = rstMarca
+    dbmarca.listfield = "Marca" 
+
+CAP=0     
+    TXTER.ENABLED=FALSE
+    TXTMOVIM.ENABLED=FALSE
+    DBLINEA.ENABLED=FALSE
+    DBMARCA.ENABLED=FALSE
+    CMDAPLICAR.ENABLED=FALSE
+
+
+
+
+CALL FILLGRID()
+
+Sub fillGrid()
+
+    Grid.Clear True
+    Grid.AddColumn ,"MOV"           , 0   ,,  50 
+    Grid.AddColumn ,"NO"            , 0   ,,  80
+    Grid.AddColumn ,"FECHA"         , 0   ,,  120
+    Grid.AddColumn ,"E/S"           , 0   ,,  50 
+    Grid.AddColumn ,"CANTIDAD"      , 0   ,,  50 
+    Grid.AddColumn ,"EXISTENCIA"    , 0   ,,  50
+
+
+       Set rstKardex = CreaRecordSet( "SELECT top 20 movsinv.articulo, prods.descrip, movsinv.tipo_movim, "&_
+									"movsinv.no_referen, movsinv.f_movim, movsinv.ent_sal, movsinv.cantidad, "&_
+									"movsinv.existencia, movsinv.costo, movsinv.precio_vta As 'Valor de operación', "&_            
+									"movsinv.costopromedio * movsinv.existencia As 'Valor de inventario', movsinv.almacen, "&_
+									"movsinv.exist_alm FROM movsinv INNER JOIN prods ON movsinv.articulo = prods.articulo " &_
+									"WHERE movsinv.consec > 0 AND movsinv.ARTICULO='"&ARTICULO&"' ORDER BY movsinv.consec desc", Ambiente.Connection )
+
+    bolColor = True 
+  
+    While Not rstKardex.EOF 
+
+          Grid.AddRow           
+
+          If bolColor Then
+             intColor = vbGreen
+             bolColor = False
+          Else
+             intColor = vbWhite
+             bolColor = True
+          End If                      
+
+          If rstKardex("ent_sal")="E" Then
+				MOV= rstKardex("CANTIDAD")
+             intColor =rgb(0,191,255)
+          End If 
+
+          If rstKardex("ent_sal")="S" Then
+				MOV= val2(rstKardex("CANTIDAD"))*-1
+             intColor = rgb(255,218,185)
+          End If 
+
+
+          Grid.CellDetails Grid.Rows, 01, rstKardex("tipo_movim"), 0
+          Grid.Cell( Grid.Rows, 01 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 02, rstKardex("no_referen"), 0
+          Grid.Cell( Grid.Rows, 02 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 03, rstKardex("f_movim"), 0
+          Grid.Cell( Grid.Rows, 03 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 04,rstKardex("ent_sal") , 0
+          Grid.Cell( Grid.Rows, 04 ).BackColor = intColor
+                                                                  
+          Grid.CellDetails Grid.Rows, 05,mov, 0
+          Grid.Cell( Grid.Rows, 05 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 06, rstKardex("existencia"), 0
+          Grid.Cell( Grid.Rows, 06 ).BackColor = intColor
+
+          rstKardex.MoveNext
+    Wend
+    
+End Sub
+
+
+
+Sub Button_click()
+
+	Select Case ControlEvento.Tag
+
+		    Case "cmdalta"
+		
+			 Script.RunForm "altarapida", Me, Ambiente,, FALSE
+  
+		    Case "cmdKardex"
+		
+				EjecutaReporte "KARDEX"       
+          
+			 Case "cmdAplicar"                                       
+
+                CALL APLICA_CAMBIOS ()
+
+			 Case "cmdcaptura"
+
+				CALL ACTIVA_CAPTURA () 
+
+			 Case "cmdEtiqueta"
+
+			 Script.RunForm "IMPRIMESTICKALTER", Me, Ambiente,, FALSE
+
+			 Case "cmdlm"
+
+				CALL linea_marca () 
+
+			
+	end select
+  
+END SUB  
+
+SUB APLICA_CAMBIOS ()
+		articulo.setfocus
+
+		SET RSTMOVSINV= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&articulo&"'  AND (TIPO_MOVIM='COM' OR TIPO_MOVIM='"&txtmovim&"') )AND ARTICULO='"&articulo&"' ", AMBIENTE.CONNECTION)
+		SET RSTENT= CREARECORDSET ("SELECT * FROM ENTRADAS WHERE ENTRADA='1' ", AMBIENTE.CONNECTION)
+		SET RSTMOVSINVUM= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&articulo&"'  )AND ARTICULO='"&articulo&"' ", AMBIENTE.CONNECTION)
+
+			ER=VAL2(TXTER.TEXT)
+			AJ=ER+(ES*-1)
+			COMP=ES+AJ  
+			lbdatos.caption= UPC & " Ext S "& ES & " Ajuste "& AJ   & " Ext Real "&  COMP
+			 'MSGBOX UPC 
+
+
+			FI= FORMATO (date,"DD-MM-YYYY")
+
+		IF  NOT RSTMOVSINV.EOF THEN  
+			FA= FORMATO (RSTMOVSINV("F_MOVIM"), "DD-MM-YYYY")
+			TM= RSTMOVSINV("TIPO_MOVIM") &" ULTIMO MOVIMIENTO DE TABLA "& RSTMOVSINVUM("TIPO_MOVIM")   
+		ELSE
+			FA= FORMATO ("01-01-1990", "DD-MM-YYYY")
+ON ERROR RESUME NEXT
+			TM="SIN AJUSTE "& "ULTIMO MOV. "& RSTMOVSINVUM("TIPO_MOVIM")  
+		END IF
+
+		'MSGBOX 
+		IF  FA < FI   THEN 
+			 IF  QUESTION ("ESTE PRODUCTO NO TIENE MOVIMIENTO DESEAS CONTINUAR")= TRUE THEN
+			 	CALL ACTUALIZADATOS ()  
+		 	    exit sub
+ 			END IF  
+		ELSE  
+			IF QUESTION ("SE DETECTO UN MOVIMIENTO RECIENTE, DESEAS VERIFICAR LA EXISTENCIA "&FA&"  "&"TIPO DE MOV "&TM)= FALSE THEN 
+				EXIT SUB
+
+			ELSE 
+
+ 				IF  QUESTION ("DESEA AGREGAR O CAMBIAR LA EXISTENCIA DE ESTE PRODUCTO")= TRUE THEN
+ 					CALL ACTUALIZADATOS ()
+					exit sub
+		 		END IF   
+			END IF
+		END IF
+
+
+
+END SUB
+
+SUB ACTUALIZADATOS () 
+ SET RSTENTPART= CREARECORDSET ("SELECT CONSEC FROM CONSEC WHERE DATO='ENTPART' ", AMBIENTE.CONNECTION)
+
+ENTCONSEC= VAL2(RSTENTPART(0))+1
+
+sqlmovs = "INSERT MOVSINV "&_
+"( OPERACION,"&_
+"  MOVIMIENTO,"&_
+"  ENT_SAL,"&_
+"  TIPO_MOVIM,"&_
+"  NO_REFEREN,"&_
+"  ARTICULO,"&_
+"  F_MOVIM,"&_
+"  hora,"&_
+"  CANTIDAD,"&_
+"  COSTO,"&_
+"  COSTOPROMEDIO,"&_
+"  EXISTENCIA,"&_
+"  ALMACEN,"&_
+"  EXIST_ALM,"&_
+"  PRECIO_VTA,"&_
+"  POR_COSTEA,"&_
+"  USUARIO,"&_
+"  ID_ENTRADA)"&_
+"	VALUES "&_
+"(	'EN', "&_
+"	'1 ', "&_
+"	'E', "&_
+"	'"&txtmovim.text&"',"&_
+"	'1',"&_
+"	'"&ARTICULO&"',"&_
+"	'"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"	'"&FORMATO (time,"00:00:00")&"',"&_
+"	'"&AJ&"',"&_
+"	"&Formato(COSTO,"###.00")&","&_
+"	"&Formato(COSTO,"###.00")&","&_
+"	'"&ER&"',"&_ 
+"	'1',"&_
+"	'"&ER&"',"&_ 
+"	"&Formato(PRECIO,"###.00")&","&_
+"	'"&AJ&"',"&_  
+"	'SUP',"&_
+"	'2')" 
+
+sqlent ="INSERT entradas"&_
+"(  Entrada,"&_
+"  OCUPADO,"&_
+"  TIPO_DOC,"&_
+"  FACTURA,"&_
+"  F_EMISION,"&_
+"  IMPORTE,"&_
+"  COSTO, "&_
+"  ALMACEN,"&_
+"  ESTADO,"&_
+"  OBSERV,"&_
+"  DATOS,"&_
+"  USUARIO,"&_
+"  USUFECHA,"&_
+"  USUHORA)"&_
+"VALUES ("&_
+"  '1',"&_
+"  '0',"&_
+"  'II',"&_
+"  'AJUSTE DE INVENTARIO CMESIT',"&_
+"  '"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"  '0',"&_
+"  '0',"&_
+"  '1',"&_
+"  'CO',"&_
+"  'AJUSTE INVENTARIO',"&_
+"  'AJUSTE DE INVENTARIO CMESIT',"&_
+"  'SUP',"&_
+"  '"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"  '"&FORMATO (time,"00:00:00")&"' "
+
+
+SQLENTPART="INSERT entpart "&_
+"(  ENTRADA,"&_
+"  TIPO_DOC,"&_
+"  NO_REFEREN,"&_
+"  ARTICULO,"&_
+"  CANTIDAD,"&_
+"  PRECIO,"&_
+"  OBSERV,"&_
+"  PARTIDA,"&_
+"  ID_ENTRADA,"&_
+"  Usuario,"&_
+"  UsuFecha,"&_
+"  UsuHora,"&_
+"  PRCANTIDAD,"&_
+"  CLAVEADD)"&_ 
+"VALUES "&_
+"( '1',"&_
+"  'II',"&_
+"  '0',"&_
+"  '"&ARTICULO&"',"&_
+"  '"&AJ&"',"&_
+"  "&Formato(COSTO,"###.00")&","&_
+"  '"&UPC&"',"&_
+"  '0',"&_
+"  '"&ENTCONSEC&"',"&_
+"  'SUP',"&_
+"	'"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"	'"&FORMATO(time,"00:00:00")&"',"&_
+"  '0',"&_
+"  ' ')"
+
+
+IF NOT RSTENT.EOF THEN
+ELSE
+MSGBOX sqlent  &" " &  SQLENTPART &" "& sqlmovs 
+Ambiente.Connection.Execute (sqlent)
+END IF
+
+
+IF  RSTENTPART.EOF THEN
+ELSE
+
+Ambiente.Connection.Execute (SQLENTPART)
+Ambiente.Connection.Execute "update consec set consec='"&ENTCONSEC&"' where dato='entpart'"
+
+END IF
+
+
+
+Ambiente.Connection.Execute (sqlmovs)
+
+
+Ambiente.Connection.Execute "update prods set EXISTENCIA='"&ER&"',LINEA='"&dblinea.text&"',MARCA='"&dbmarca.text&"' where articulo='"&articulo&"'"
+
+Ambiente.Connection.Execute "update EXISTENCIAALMACEN set EXISTENCIA='"&ER&"',ALMACEN='1' where articulo='"&articulo&"'"
+
+
+ARTICULO.SETFOCUS
+END SUB
+
+Sub Form_KeyDown()
+         
+    ' Cuando presionamos la tecla F5
+    if KeyCodeForm = 116 Then
+       GuardaDatos       
+       LimpiaCampos
+       Controles("articulo").SetFocus 'Colocamos foco en artículo
+    end if
+
+
+
+End Sub
+
+Sub Text_KeyDown()
+    Dim rstProds,Busqueda
+
+    if ControlEvento.Tag = "articulo" Then
+       If KeyCode = 40 Then
+          Set Busqueda = CreateObject ("MyBBusquedaArticulos.BusquedaArticulos")
+          Set Busqueda.Ambiente = Ambiente
+          Set Busqueda.Control = articulo
+          Busqueda.MuestraForma
+          Set Busqueda = Nothing
+          articulo.SetFocus
+          Exit Sub
+       End if
+    end if
+
+End Sub     
+
+Sub Text_LostFocus()
+
+Set rstclaveok = CreaRecordset ("Select articulo from clavesadd where clave = '"&articulo&"' ",Ambiente.Connection)
+if  not rstclaveok.eof then
+articulo= rstclaveok("articulo")
+end if
+
+
+
+
+    If ControlEvento.Tag = "articulo" Then
+
+       Set rstProds = Rst ("SELECT * FROM prods WHERE articulo = '" & Controles("articulo").Text &"'", Ambiente.Connection)
+       SET RSTMOVSINVUM= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&articulo&"'  )AND ARTICULO='"&articulo&"' ", AMBIENTE.CONNECTION)
+
+       If not rstProds.EOF Then 
+'on error resume next
+           Controles("LBEXIST").CAPTION = "EXISTENCIA ACTUAL= " & rstProds("EXISTENCIA")
+           Controles("lblLabel1").CAPTION = "ARTICULO " & rstProds(1)
+           Controles("lblLabel4").CAPTION = "LINEA. " & rstProds(2)
+           Controles("lblMarca").CAPTION = "MARCA. " & rstProds(3)
+           dblinea.text=rstProds(2)
+           dbmarca.text=rstProds(3)
+		   articulo.text=rstProds(0)
+
+			articulo.text= rstProds("articulo")
+			UPC= rstProds("DESCRIP")  
+			COSTO= rstProds("COSTO_U") 
+			PRECIO= rstProds("PRECIO1")
+			ES=VAL2(rstProds("EXISTENCIA"))
+			articulo=UCASE(rstprods("ARTICULO"))
+
+		set rstclaveadd= CreaRecordSet ("Select * from clavesadd where articulo = '"&ARTICULO&"' ",Ambiente.Connection)
+		IF  NOT rstclaveadd.EOF THEN
+			LBLUPC= "UPC "&rstclaveadd("CLAVE") 
+		ELSE
+			LBLUPC= "UPC "
+			'CALL AGREGA_UPC()
+
+		END IF
+
+			call fillgrid ()
+		end if
+	end if
+
+
+
+
+end sub   
+
+Sub  AGREGA_UPC()
+
+If Question ("Quieres Agregar el UPC")=true then
+ambiente.var8=articulo
+Script.RunForm "AGREGAUPC", Parent, Ambiente,, true
+end if
+
+set rstclaveadd= CreaRecordSet ("Select * from clavesadd where articulo = '"&ARTICULO&"' ",Ambiente.Connection)
+	IF  NOT rstclaveadd.EOF THEN
+		LBLUPC= "UPC "&rstclaveadd("CLAVE") 
+	END IF
+
+End Sub
+
+Sub EjecutaReporte(reporte)
+
+    Dim rstReporte
+
+    Set rstReporte = Rst("SELECT * FROM formatosdelta WHERE formato = '" & reporte & "'", Ambiente.Connection )
+
+    If rstReporte.EOF Then
+       Exit Sub
+    End If
+
+	Script.Preview rstReporte("tipo"), rstReporte("codigo"), Ambiente, Me, rstReporte("formato"), ""
+
+
+End Sub 
+
+
+SUB ACTIVA_CAPTURA ()
+
+IF CMDCAPTURA.CAPTION="ACTIVA CAPTURA" THEN
+		IF QUESTION("¿QUIERES ACTIVAR LAS CASILLAS DE CAPTURA?")=TRUE THEN
+		        TXTER.ENABLED=TRUE
+			    TXTMOVIM.ENABLED=TRUE
+			    DBLINEA.ENABLED=TRUE
+			    DBMARCA.ENABLED=TRUE
+			    CMDAPLICAR.ENABLED=TRUE
+				CMDCAPTURA.CAPTION="DESACTIVA CAPTURA"
+		END IF
+ELSE
+		IF QUESTION("¿QUIERES DESACTIVAR LAS CASILLAS DE CAPTURA?")=TRUE THEN
+		        TXTER.ENABLED=FALSE
+			    TXTMOVIM.ENABLED=FALSE
+			    DBLINEA.ENABLED=FALSE
+			    DBMARCA.ENABLED=FALSE
+			    CMDAPLICAR.ENABLED=FALSE
+				CMDCAPTURA.CAPTION="ACTIVA CAPTURA"
+		END IF
+END IF
+
+
+End Sub
+
+Sub linea_marca ()
+
+
+	if  articulo ="" then 
+		
+		msgbox "Introduce un Articulo"
+        EXIT SUB
+	end if
+
+
+if Question ("¿Deseas Actualizar Linea y Marca?") = true then 
+	
+	Set rstProds = Rst ("SELECT * FROM prods WHERE articulo = '" & Controles("articulo").Text &"'", Ambiente.Connection)
+ 
+            If not rstProds.EOF Then
+
+				Ambiente.Connection.Execute "update prods set LINEA='"&dblinea.text&"',MARCA='"&dbmarca.text&"' where articulo='"&articulo&"'"
+
+
+			End if
+
+	
+
+else
+
+exit sub
+
+end if
+
+end sub 
+
+
+
+
+
+
+
+
+
+
+
+

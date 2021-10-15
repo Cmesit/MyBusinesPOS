@@ -1,0 +1,107 @@
+WEBKARDEX
+
+Forma==8985==7290==-72375==3630==Form1==Form1$$-$$WebBrowser==6285==6125==250==250==WebBrowser====5$$-$$TextBox==1395==345==7125==625==txtFields0==Text1==2$$-$$CommandButton==1725==690==6875==5875==cmdButton0==Command==0$$-$$Label==780==195==7380==285==lblLabel0==lblLabel0==1$$-$$
+Sub Load_From
+
+end sub
+
+
+Sub button_click
+llena_kardex
+end sub
+
+Sub llena_kardex
+
+      Set rstProds = CreaRecordSet( "SELECT prods.descrip, prods.articulo, prods.precio1, prods.imagen, prods.url,prods.talla,prods.existencia, impuestos.valor FROM prods, impuestos WHERE prods.impuesto = impuestos.impuesto", Ambiente.Connection )
+
+    z = 0    
+    i=0           
+         cHtml = ""
+          cHtml = cHtml & "<html>"
+          cHtml = cHtml & "<head>"
+          cHtml = cHtml & "<title>Catalogo con Kardex</title>"
+          cHtml = cHtml & "</head>"
+          cHtml = cHtml & "<body>"
+
+          cHtml = cHtml & "<table width='100%' border='1' cellspacing='0' cellpadding='5'>"  
+    h=0
+    While Not rstProds.EOF 
+    h=h+1
+          cHtml = cHtml & "<tr>"
+          cHtml = cHtml & "<td>"
+          cHtml = cHtml & "<p><b>" & h & "</b></p>"  
+          cHtml = cHtml & "</td>"
+
+          cHtml = cHtml & "<td>"
+ 
+          if Not clEmpty( Trim( cNull(rstProds("imagen")) ) ) Then
+             cHtml = cHtml & "<img border='0' src='" & rstProds("Imagen") & "' width='200'"
+          end if
+
+          cHtml = cHtml & "</td>"
+
+          cHtml = cHtml & "<td valign='top'><font face='Verdana,Geneva,Arial,Helvetica,sans-serif' size='2'>"
+          cHtml = cHtml & "<p><b>" & Trim(rstProds("Articulo")) & "</b></p>"  
+          cHtml = cHtml & "<p><b>" & Trim(rstProds("Descrip")) & "</b></p>"
+          cHtml = cHtml & "<p><b>Precio de lista: " & Trim(Formato( rstProds("Precio1") * (1 + (Val2(rstProds("valor"))/100)), "$###,###.00")) & "</b></p>"
+          cHtml = cHtml & "<p><b>Talla: " & rstProds("Talla")& "</b></p>"
+          cHtml = cHtml & "<p><b>Existencia: " & rstProds("Existencia") & "</b></p>"
+
+          cHtml = cHtml & "</font>"
+          cHtml = cHtml & "</td>"
+
+          Set rstClavesAdd = CreaRecordSet( "SELECT * FROM clavesadd WHERE articulo = '" & ColumnValue & "'", Ambiente.Connection )
+
+          n = 0 
+
+           cHtml = cHtml & "<td>"
+			cHtml = cHtml & "<table width='100%' border='1' cellspacing='0' cellpadding='5'>"  
+	        cHtml = cHtml & "<tr>"
+            cHtml = cHtml & "<td><p><b>Fecha</b></p></td>"
+            cHtml = cHtml & "<td><p><b>Movimiento</b></p></td>"
+            cHtml = cHtml & "<td><p><b>No Ref</b></p></td>"
+            cHtml = cHtml & "<td><p><b>Tipo</b></p></td>"
+			cHtml = cHtml & "<td><p><b>Ent/Sal</b></p></td>" 
+            cHtml = cHtml & "<td><p><b>Cantidad</b></p></td>"
+	        cHtml = cHtml & "</tr>"			  
+			 
+         set rstkardex =rst("SELECT UPPER(movsinv.articulo) AS articulo, prods.descrip, movsinv.tipo_movim, movsinv.no_referen, movsinv.f_movim, movsinv.ent_sal, movsinv.cantidad, movsinv.existencia, movsinv.costo, movsinv.precio_vta As 'Valor de operación', movsinv.costopromedio * movsinv.existencia As 'Valor de inventario', movsinv.almacen, movsinv.exist_alm FROM movsinv INNER JOIN prods ON movsinv.articulo = prods.articulo WHERE movsinv.consec > 0  AND movsinv.articulo = '"&rstProds("Articulo")&"'  ORDER BY movsinv.articulo, movsinv.consec",Ambiente.Connection)
+			while not rstkardex.eof
+               n = n + 1
+
+                   if n = 1 Then 
+                      cHtml = cHtml & "<tr bgcolor='#ffccff'>"
+                   else
+                      cHtml = cHtml & "<tr bgcolor='#ffffff'>"
+                      n = 0
+                   end if
+
+            cHtml = cHtml & "<td><p><b>"& Trim(rstkardex("F_Movim"))&"</b></p></td>"
+            cHtml = cHtml & "<td><p><b>"& Trim(rstkardex("tipo_movim"))&"</b></p></td>"
+            cHtml = cHtml & "<td><p><b>"& Trim(rstkardex("no_referen"))&"</b></p></td>"
+            cHtml = cHtml & "<td><p><b>"&  Trim(rstkardex("tipo_movim"))&"</b></p></td>"
+			cHtml = cHtml & "<td><p><b>"& Trim(rstkardex("cantidad"))&"</b></p></td>" 
+            cHtml = cHtml & "<td><p><b>"& Trim(rstkardex("ent_sal"))&"</b></p></td>" 
+         	cHtml = cHtml & "</tr>"
+ 
+				rstkardex.movenext
+            wend
+            cHtml = cHtml & "</table>"
+          rstProds.MoveNext
+		wend
+  
+          cHtml = cHtml & "</td>" 
+          cHtml = cHtml & "</tr>"
+          cHtml = cHtml & "</table>"
+          cHtml = cHtml & "</body></html>"     
+          cHtml = cHtml & "</body>"
+          cHtml = cHtml & "</html>"
+
+    cArchivo = "C:\MKC\Auditoria\" & "Catalogo" & Formato( Date, "ddMMyyyy" ) & Formato( Time, "hhmmss" ) & ".html"
+    OutLine (cArchivo), cHtml   
+
+    WebBrowser.Navigate (cArchivo)
+
+
+
+end sub

@@ -1,0 +1,2006 @@
+CONTEOPOCKET
+
+Forma==15420==8820==1515==2520====$$-$$DBCombo==2000==315==1250==6750==DBLinea==Linea==13$$-$$Grid==12225==5000==125==1625==Grid====14$$-$$CheckBox==2000==300==6500==750==chkLector==Act. Lector (F4)==15$$-$$TextBox==2500==345==125==250==txtArticulo====0$$-$$CommandButton==930==500==8750==125==cmdContar==&Contar==16$$-$$Label==225==195==13620==7380==lblLista===>==17$$-$$TextBox==5000==345==2750==250==txtDescrip====1$$-$$TextBox==800==345==7875==250==txtCant====2$$-$$CommandButton==1200==375==9875==625==cmdImprimir==Imprimir==18$$-$$TextBox==5000==345==125==875==txtObserv====5$$-$$CommandButton==915==375==5250==875==cmdObserv==&Guardar==6$$-$$CommandButton==1200==375==9875==125==cmdAlta==Articulos==19$$-$$CommandButton==1035==375==14000==7375==cmdCrear==Crear==20$$-$$Label==225==195==13620==7875==lblLimpia===>==21$$-$$CommandButton==1005==375==14000==7750==cmdReset==Limpia==22$$-$$CommandButton==1200==375==8625==1125==cmdUpdate==Actualizar==23$$-$$CheckBox==2000==300==6500==1125==chkRevu==Revisión &Unica==24$$-$$Label==660==195==120==0==lblArt==Articulo==25$$-$$Label==1005==195==2745==0==lblDescrip==Descripción==26$$-$$Label==615==195==7875==0==lblCont==Conteo==27$$-$$Label==1065==195==120==630==lblObserv==Observación==28$$-$$Label==2700==195==11875==6750==lblAdmin==Ingresa ID de tu Base de Datos==29$$-$$Label==480==195==495==6750==lblLinea==Linea==30$$-$$DBCombo==2000==315==1250==7250==DBMarca==Marca==31$$-$$Label==540==195==495==7245==lblMarca==Marca==32$$-$$Label==480==195==4755==6630==lblExt==Exist.==33$$-$$TextBox==800==345==4625==6875==txtexis====34$$-$$TextBox==800==345==5625==6875==txtconteo====35$$-$$Label==465==195==5745==6630==lblConte==Cont.==36$$-$$TextBox==765==345==6625==6875==txtdif====37$$-$$Label==315==195==6870==6630==lblDif==Dif.==38$$-$$CommandButton==930==345==6500==7500==cmdBuscar==Buscar==39$$-$$Label==1275==195==3630==7245==lblSQL==Avanzado SQL==40$$-$$TextBox==2895==285==3500==7500==txtsql====41$$-$$Label==855==195==120==7755==lblUbic==Ubicación==42$$-$$DBCombo==2000==315==1250==7750==DBubic==Ubicación==43$$-$$WebBrowser==2475==3750==12500==625==WebBrowser====44$$-$$CheckBox==2000==300==3500==7875==chkFiltros==Activa Filtros==45$$-$$CommandButton==930==300==3375==6750==cmdDBReset==&Reset==46$$-$$CommandButton==1200==500==11125==7375==cmdinvdir==Inventario Directo==47$$-$$TextBox==2000==345==13000==125==txtInfo====48$$-$$Label==300==195==12630==120==lblInfo==Inf.==49$$-$$Label==630==195==11130==255==lblLabel15==Cont. 1==50$$-$$TextBox==500==345==11875==125==txtFields9====51$$-$$TextBox==500==345==11875==625==txtFields10====52$$-$$TextBox==500==345==11875==1125==txtFields11====53$$-$$Label==630==195==11130==750==lblLabel16==Cont. 2==54$$-$$Label==630==195==11130==1245==lblLabel17==Cont. 3==55$$-$$TextBox==2300==345==7625==6875==txtFields12====56$$-$$TextBox==1000==345==8875==7375==txtFields13====57$$-$$Label==900==195==7620==6630==lblLabel18==Cliente VP==58$$-$$Label==990==195==7620==7380==lblLabel19==No Venta P==59$$-$$Label==345==195==7620==7875==lblLabel20==Info==60$$-$$CommandButton==915==625==10000==6875==cmdButton10==Agrega Obs.==61$$-$$TextBox==1950==285==11875==7000==txtFields14==01==62$$-$$CommandButton==1000==300==14000==7000==cmdbd==BD OK==63$$-$$CommandButton==960==500==12375==7375==cmdajuste==Aplica A&juste==64$$-$$CheckBox==2000==300==11250==7875==chkField3==Ajuste Directo==65$$-$$TextBox==660==285==11000==7000==txtvisible==25==66$$-$$Label==720==195==11000==6750==lblLabel21==VISIBLE==67$$-$$
+dim busca,Url_Imagen, varfil,bdconteo,ajusted
+DIM ES
+DIM AJ
+DIM ER
+DIM UPC
+DIM COSTO
+DIM PRECIO
+DIM ENTCONSEC 
+DIM MOV
+DIM CAP
+DIM COMP
+'txtmovim.text= "AS"
+movim="CCI"
+Url_Imagen="https://i0.wp.com/cmesit.com/wp-content/uploads/2018/03/logonew2016-Small-1.png"
+llena_imagen
+
+sub Form_load()
+
+Set rstMovinv = Rst("Select * from tipominv where Tipo_Movim='CCI'", Ambiente.connection)
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+if rstMovinv.eof then
+
+    Query.StrState = "INSERT"
+
+    Query.addfield "tipominv", "Tipo_Movim","CCI" 
+    Query.addfield "tipominv", "Descrip", "Conteo de Inventario CMESIT"
+    Query.addfield "tipominv", "ENT_SAL", "E"
+    Query.addfield "tipominv", "Usuario", "SUP" 
+    Query.addfield "tipominv", "Fijo", 0
+    Query.addfield "tipominv", "USUFECHA", formato (date,"DD/MM/YYYY")
+    Query.addfield "tipominv", "USUHORA", formato (date,"HH:MM:SS")
+    Query.addfield "tipominv", "afectacosto", 0
+    Query.CreateQuery
+    Query.Execute
+	Query.reset
+end if
+
+
+
+ajusted=0 
+on error resume next
+    Grid2.Visible = True  
+    Grid2.Top = Me.Top + 4500
+    Grid2.Left = Me.Left + 12550
+    Grid2.Width = Me.Width - 12900
+    Grid2.Height = Me.Height - 6800
+
+me.backcolor= rgb(0, 104, 120)
+chkRevu.backcolor= rgb(0, 104, 120)
+chkLector.backcolor= rgb(0, 104, 120)
+chkFiltros.backcolor= rgb(0, 104, 120)
+chkField3.backcolor= rgb(0, 104, 120)
+
+lblArt.forecolor=VBwhite
+lblDescrip.forecolor=VBwhite
+lblCont.forecolor=VBwhite
+lblLista.forecolor=VBwhite
+lblLimpia.forecolor=VBwhite
+lblObserv.forecolor=VBwhite
+lblAdmin.forecolor=VBwhite
+lblLinea.forecolor=VBwhite
+lblMarca.forecolor=VBwhite
+lblUbic.forecolor=VBwhite
+lblExt.forecolor=VBwhite
+lblConte.forecolor=VBwhite
+lblDif.forecolor=VBwhite
+lblSQL.forecolor=VBwhite
+lblInfo.forecolor=VBwhite
+chkRevu.forecolor=VBwhite
+chkLector.forecolor=VBwhite 
+chkFiltros.forecolor=VBwhite
+chkField3.forecolor=VBwhite    
+lblLabel15.forecolor=VBwhite
+lblLabel16.forecolor=VBwhite 
+lblLabel17.forecolor=VBwhite
+lblLabel18.forecolor=VBwhite 
+lblLabel19.forecolor=VBwhite 
+lblLabel20.forecolor=VBwhite   
+lblLabel21.forecolor=VBwhite
+
+lblArt.font="Calibri"
+lblDescrip.font="Calibri"
+lblCont.font="Calibri"
+lblLista.font="Calibri"
+lblLimpia.font="Calibri"
+lblObserv.font="Calibri"
+lblAdmin.font="Calibri"
+lblLinea.font="Calibri"
+lblMarca.font="Calibri"
+lblUbic.font="Calibri"
+lblExt.font="Calibri"
+lblConte.font="Calibri"
+lblDif.font="Calibri"
+lblSQL.font="Calibri"
+lblInfo.font="Calibri"
+lblLabel15.font="Calibri"
+lblLabel16.font="Calibri"
+lblLabel17.font="Calibri"
+lblLabel18.font="Calibri"
+lblLabel19.font="Calibri"
+lblLabel20.font="Calibri"
+lblLabel21.font="Calibri"
+
+txtArticulo.font="Calibri"
+txtDescrip.font="Calibri"
+txtCant.font="Calibri"
+txtObserv.font="Calibri"
+txtexis.font="Calibri"
+txtconteo.font="Calibri"
+txtdif.font="Calibri"
+txtsql.font="Calibri"
+chkRevu.font="Calibri"
+chkLector.font="Calibri"
+chkFiltros.font="Calibri"
+chkField3.font="Calibri"
+txtFields12.font="Calibri" 
+txtFields13.font="Calibri"
+
+
+lblArt.Fontsize = "12"
+lblDescrip.Fontsize = "12"
+lblCont.Fontsize = "12"
+lblLista.Fontsize = "12"
+lblLimpia.Fontsize = "12"
+lblObserv.Fontsize = "12"
+lblAdmin.Fontsize = "12"
+lblLinea.Fontsize = "12"
+lblMarca.Fontsize = "12"
+lblUbic.Fontsize = "12"
+lblExt.Fontsize = "12"
+lblConte.Fontsize = "12"
+lblDif.Fontsize = "12"
+lblSQL.Fontsize = "12"
+lblInfo.Fontsize = "12"
+lblLabel15.Fontsize = "12"
+lblLabel16.Fontsize = "12"
+lblLabel17.Fontsize = "12"
+lblLabel18.Fontsize = "12"
+lblLabel19.Fontsize = "12"
+lblLabel20.Fontsize = "12"
+lblLabel21.Fontsize = "12"
+
+txtArticulo.Fontsize = "12"
+txtDescrip.Fontsize = "12"
+txtCant.Fontsize = "12"
+txtObserv.Fontsize = "12"
+txtexis.Fontsize = "12"
+txtconteo.Fontsize = "12"
+txtdif.Fontsize = "12"
+txtsql.Fontsize = "12"
+txtFields12.Fontsize = "12"
+txtFields13.Fontsize = "12"
+
+chkRevu.Fontsize = "12"
+chkLector.Fontsize = "12"
+chkFiltros.Fontsize = "12" 
+chkField3.Fontsize = "12"
+
+    Set rstLineas = CreaRecordSet("SELECT linea FROM lineas ORDER BY linea", Ambiente.Connection )
+    Set rstMarca = CreaRecordSet("SELECT Marca FROM Marcas ORDER BY marca", Ambiente.Connection )
+    Set rstUbic = CreaRecordSet("SELECT Ubicacion FROM Ubicacion ORDER BY Ubicacion", Ambiente.Connection )
+
+    Set dblinea.RowSource = rstLineas
+    dblinea.listfield = "Linea" 
+
+    Set dbmarca.RowSource = rstMarca
+    dbmarca.listfield = "Marca" 
+
+    Set DBubic.RowSource = rstUbic
+    DBubic.listfield = "Ubicacion" 
+
+'call fillGrid()
+
+end sub
+
+Sub Button_click()
+
+	Select Case ControlEvento.Tag
+
+		    Case "cmdContar"
+
+            if  chkRevu.value=0 then
+            chkRevu.value=1
+			end if
+		
+
+			if ajusted=0 then 		
+				call aplica_conteo ()
+				call fillgrid () 
+				call limpia_campos()
+				txtArticulo.SetFocus
+			else
+               call APLICA_CAMBIOS ()
+			end if 
+		    Case "cmdImprimir"
+		
+				EjecutaReporte "IMPRIMEGRID"       
+          
+			 Case "cmdObserv"                                       
+ 
+                CALL Agrega_obser()
+
+			 Case "cmdAlta"
+				
+			 Script.RunForm "altarapida", Me, Ambiente,, FALSE 
+
+			 Case "cmdinvdir"
+				
+			 Script.RunForm "AJUSTEINVENTACTI", Me, Ambiente,, FALSE
+
+			 Case "cmdCrear"
+				
+				CALL Crea_Lista()
+				'call Fillgrid()
+			 Case "cmdReset"
+
+				if msgbox ("Esta operacion eliminara por completo el conteo de Inventario"& vbNewLine &"¿Estás seguro que deseas continuar?",32+vbyesno,"Genera Lista de comparación")=vbyes then
+				                   if msgbox ("Despues de esta operacion no podra recuperar los datos"& vbNewLine &"¿Estás seguro que deseas continuar?",32+vbyesno,"Genera Lista de comparación")=vbyes then
+						                   if msgbox ("Por motivos de seguridad se necesita responder la ultima pregunta"& vbNewLine &"¿Deseas cancelar la operación?",32+vbyesno,"Genera Lista de comparación")=vbno then
+      							
+						
+						                ambiente.connection.execute("DROP TABLE "&bdconteo&"") 
+										call revisa_bd()
+						 				call Fillgrid()
+										msgbox "EL CONTEO DE INVENTARIO SE ELIMINO CON EXITO",64
+											else
+										exit sub
+											end if
+									else
+									exit sub
+									end if  
+				else
+					exit sub
+				end if
+
+			 Case "cmdUpdate"
+
+				Call fillgrid()  
+
+			case "cmdBuscar"
+				call buscar()
+ 
+			case "cmdDBReset"
+
+DBLinea.text="Linea" 
+DBMarca.text="Marca"
+DBUbic.text="Ubicación"    
+
+			case "cmdButton10"	
+
+txtObserv.text= "Articulo en Apartado No:"&txtFields13&" Cliente:"&txtFields12&" "&lblLabel20.caption
+txtArticulo=Grid.Cell( Grid.SelectedRow, 2 ).Text		
+           
+			case "cmdbd"
+			bdconteo = UCASE(Cstr("CMESITINV_"&txtFields14.text))
+            me.caption= "Base de datos activa "&bdconteo 
+			case "cmdajuste"
+
+            if question ("Este proceso Modificara la existencia y no hay forma de revertirlo, ¿Deseas Continuar?")= true then
+				if question ("Se aplicaran los datos del conteo "&bdconteo&", ¿Deseas Continuar?")= true   then
+
+				'ImportaInventario
+                end if
+            else
+				exit sub
+			end if
+
+	end select
+  
+END SUB  
+
+Sub  aplica_conteo () 
+
+if txtArticulo="" then
+Msgbox "Introduzca un Articulo" 
+exit sub
+end if
+
+if txtDescrip="" then
+Msgbox "Introduzca un Articulo"  
+exit sub
+end if
+
+if txtCant="" then
+Msgbox "Introduzca la cantidad de conteo"  
+exit sub
+end if
+
+if not IsNumeric(txtCant) then
+Msgbox "Introduzca la cantidad de conteo valida"  
+exit sub
+end if
+
+
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+set rstconteo = CreaRecordset ("Select "&bdconteo&".Articulo,conteo from "&bdconteo&" where Articulo='"&txtArticulo&"' ",Ambiente.Connection)
+set rstprodinfo = CreaRecordset ("Select * from Prods where Articulo='"&txtArticulo&"'",Ambiente.Connection)
+
+if rstprodinfo.eof then
+Msgbox "No se encontro el articulo dentro del catalogo"  
+exit sub
+end if
+
+    If rstconteo.eof then
+       Query.StrState = "INSERT"
+       Query.addfield ""&bdconteo, "Articulo", txtArticulo
+	Cant=val2(txtCant)
+    Dif= val2(rstprodinfo("Existencia")) - cant
+
+    Else
+       Query.strState = "UPDATE"
+       Query.Condition = " Articulo = '" & txtArticulo &"'"
+	Cant=val2(rstconteo("conteo"))+val2(txtCant)
+    Dif= val2(rstprodinfo("Existencia")) - cant
+
+
+    End if    
+
+    Query.addfield ""&bdconteo, "Descrip", rstprodinfo("Descrip")
+    Query.addfield ""&bdconteo, "Linea", rstprodinfo("Linea")
+    Query.addfield ""&bdconteo, "Marca", rstprodinfo("Marca") 
+    Query.addfield ""&bdconteo, "Ubicacion", rstprodinfo("Ubicacion")
+    Query.addfield ""&bdconteo, "Existencia", rstprodinfo("Existencia")
+    Query.addfield ""&bdconteo, "Conteo", Cant
+    Query.addfield ""&bdconteo, "Diferencia", Dif
+    Query.addfield ""&bdconteo, "Fecha", FORMATO(Date,"DD/MM/YYYY")
+    Query.addfield ""&bdconteo, "hora", FORMATO(TIME,"hh:mm:ss" )
+    Query.addfield ""&bdconteo, "imagen", rstprodinfo("imagen")
+    Query.addfield ""&bdconteo, "Observ", txtObserv
+    Query.CreateQuery
+    Query.Execute
+
+if rstprodinfo("Impuesto")="IVA" then
+precio = rstprodinfo("precio1")*1.16
+else
+precio = rstprodinfo("precio1")  
+end if
+
+                txtinfo= "$ "&formato(precio,"###,###.00")
+			 	Url_Imagen=rstprodinfo("imagen")
+				call llena_imagen
+
+end sub
+
+Sub  Agrega_obser()
+
+if txtArticulo="" then
+Msgbox "Introduzca un Articulo" 
+exit sub
+end if
+
+if txtDescrip="" then
+Msgbox "Introduzca un Articulo"  
+exit sub
+end if
+
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+set rstconteo = CreaRecordset ("Select "&bdconteo&".Articulo,conteo from "&bdconteo&" where Articulo='"&txtArticulo&"' ",Ambiente.Connection)
+set rstprodinfo = CreaRecordset ("Select Prods.Articulo,Descrip,Linea,Marca,Existencia from Prods where Articulo='"&txtArticulo&"'",Ambiente.Connection)
+
+if rstprodinfo.eof then
+Msgbox "No se encontro el articulo dentro del catalogo"  
+exit sub
+end if
+
+    If rstconteo.eof then
+ 
+		msgbox "No se encontro el Articulo en el Catalogo de Conteo",64     
+        exit sub
+    Else
+       Query.strState = "UPDATE"
+       Query.Condition = " Articulo = '" & txtArticulo &"'"
+
+
+
+    End if    
+
+    Query.addfield bdconteo, "Observ", txtObserv
+    Query.CreateQuery
+    Query.Execute
+
+chkRevu.value=1
+call fillgrid 
+
+
+
+end sub
+
+Sub  Aplica_Correccion ()
+
+end sub
+ 
+Sub Crea_Lista()
+
+call revisa_bd()
+set rstprodinfo = CreaRecordset ("Select * from Prods ",Ambiente.Connection)
+
+if rstprodinfo.eof then
+Msgbox "No se encontro el articulo dentro del catalogo"  
+exit sub
+end if
+
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+while not rstprodinfo.eof
+ 
+
+	Query.reset
+	Query.StrState = "INSERT"
+	Query.addfield ""&bdconteo, "Articulo", rstprodinfo("Articulo")
+	Query.addfield ""&bdconteo, "Descrip", rstprodinfo("Descrip")
+    Query.addfield ""&bdconteo, "Linea", rstprodinfo("Linea")
+    Query.addfield ""&bdconteo, "Marca", rstprodinfo("Marca") 
+    Query.addfield ""&bdconteo, "Ubicacion", rstprodinfo("Ubicacion")
+    Query.addfield ""&bdconteo, "Existencia", rstprodinfo("Existencia")
+    Query.addfield ""&bdconteo, "Conteo", 0
+    Query.addfield ""&bdconteo, "Diferencia",0-rstprodinfo("Existencia")
+    Query.addfield ""&bdconteo, "Fecha", FORMATO(Date,"DD/MM/YYYY")
+    Query.addfield ""&bdconteo, "hora", FORMATO(TIME,"hh:mm:ss" )
+    Query.addfield ""&bdconteo, "imagen", rstprodinfo("imagen")
+    Query.addfield ""&bdconteo, "Observ", txtObserv
+    Query.CreateQuery
+    Query.Execute
+    rstprodinfo.movenext
+wend
+
+mymessage "Tu Lista de conteo inicio correctamente"
+End Sub
+
+sub buscar()
+
+call filtros
+
+
+
+    Grid.Clear True
+    Grid.AddColumn ,"No"           , 0   ,,  40
+    Grid.AddColumn ,"Articulo"           , 0   ,,  120 
+    Grid.AddColumn ,"Descripción"            , 0   ,,  200
+    Grid.AddColumn ,"Linea"         , 0   ,,  100
+    Grid.AddColumn ,"Marca"           , 0   ,,  100 
+    Grid.AddColumn ,"Ubicación"           , 0   ,,  50 
+    Grid.AddColumn ,"Exit"      , 0   ,,  40
+    Grid.AddColumn ,"Cont"    , 0   ,,  40
+    Grid.AddColumn ,"Dif"    , 0   ,,  40
+    Grid.AddColumn ,"Observaciones"    , 0   ,,  200
+                                                        
+   bolColor = True 
+
+
+	set rstconteo = CreaRecordset ("Select * from "&bdconteo&" Where articulo<>'SYS' "&varfil&" ",Ambiente.Connection)
+
+i=0  
+bolColor=FALSE
+    While Not rstconteo.EOF 
+on error resume next
+
+i=i+1
+    Url_Imagen = rstconteo("imagen") 
+    llena_imagen
+
+
+          Grid.AddRow           
+
+          If bolColor Then
+             intColor = vbGreen
+             bolColor = False
+          Else
+             intColor = vbWhite
+             bolColor = True
+          End If                      
+    SET rsvp = Crearecordset("Select ventas.tipo_doc from partvta inner join ventas on partvta.venta = ventas.venta where partvta.ARTICULO='"&rstconteo("articulo")&"' and ventas.tipo_doc='PE' ",Ambiente.connection)
+
+
+          If not rsvp.eof Then 
+             intColor =rgb(0,191,200)
+          End If 
+
+'          If rstKardex("ent_sal")="S" Then
+'				MOV= val2(rstKardex("CANTIDAD"))*-1
+'             intColor = rgb(255,218,185)
+'          End If 
+
+          Grid.CellDetails Grid.Rows, 01,i, 0
+          Grid.Cell( Grid.Rows, 01 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 02, rstconteo("Articulo"), 0
+          Grid.Cell( Grid.Rows, 02 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 03, rstconteo("Descrip"), 0
+          Grid.Cell( Grid.Rows, 03 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 04, rstconteo("Linea"), 0
+          Grid.Cell( Grid.Rows, 04 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 05,rstconteo("Marca") , 0
+          Grid.Cell( Grid.Rows, 05 ).BackColor = intColor
+                                                                  
+          Grid.CellDetails Grid.Rows, 06,rstconteo("Ubicacion"), 0
+          Grid.Cell( Grid.Rows, 06 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 07,rstconteo("Existencia"), 0
+          Grid.Cell( Grid.Rows, 07 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 08, rstconteo("Conteo"), 0
+          Grid.Cell( Grid.Rows, 08 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 09, rstconteo("Diferencia"), 0
+          Grid.Cell( Grid.Rows, 09 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 10, rstconteo("Observ"), 0
+          Grid.Cell( Grid.Rows, 10 ).BackColor = intColor
+
+
+          rstconteo.MoveNext
+    Wend
+  
+
+end Sub
+
+
+
+Sub fillGrid()
+
+
+if txtvisible="" then 
+mymessage "Coloca una cantidad valida" 
+exit sub
+end if
+
+if not IsNumeric(txtvisible) then
+mymessage "Coloca una cantidad valida" 
+exit sub
+end if
+
+    Grid.Clear True
+    Grid.AddColumn ,"No"           , 0   ,,  40
+    Grid.AddColumn ,"Articulo"           , 0   ,,  120 
+    Grid.AddColumn ,"Descripción"            , 0   ,,  200
+    Grid.AddColumn ,"Linea"         , 0   ,,  100
+    Grid.AddColumn ,"Marca"           , 0   ,,  100 
+    Grid.AddColumn ,"Ubicación"           , 0   ,,  50
+    Grid.AddColumn ,"Exit"      , 0   ,,  40
+    Grid.AddColumn ,"Cont"    , 0   ,,  40
+    Grid.AddColumn ,"Dif"    , 0   ,,  40
+    Grid.AddColumn ,"Observaciones"    , 0   ,,  200
+                                                        
+   bolColor = True 
+
+if chkRevu.value=0 then
+	set rstconteo = CreaRecordset ("Select top "&txtvisible&" * from "&bdconteo&" where articulo <> 'sys' "&varfil&" " ,Ambiente.Connection)
+elseif chkRevu.value=1 then
+	set rstconteo = CreaRecordset ("Select top "&txtvisible&" * from "&bdconteo&" Where Articulo='"&txtArticulo&"' "&varfil&"",Ambiente.Connection)
+end if
+  
+    While Not rstconteo.EOF 
+
+          Grid.AddRow           
+
+          If bolColor Then
+             intColor = vbGreen
+             bolColor = False
+          Else
+             intColor = vbWhite
+             bolColor = True
+          End If                      
+
+    SET rsvp = Crearecordset("Select ventas.tipo_doc from partvta inner join ventas on partvta.venta = ventas.venta where partvta.ARTICULO='"&rstconteo("articulo")&"' and ventas.tipo_doc='PE' ",Ambiente.connection)
+
+
+          If not rsvp.eof Then 
+             intColor =rgb(0,191,200)
+          End If 
+'
+'          If rstKardex("ent_sal")="S" Then
+'				MOV= val2(rstKardex("CANTIDAD"))*-1
+'             intColor = rgb(255,218,185)
+'          End If 
+
+
+          Grid.CellDetails Grid.Rows, 01,i, 0
+          Grid.Cell( Grid.Rows, 01 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 02, rstconteo("Articulo"), 0
+          Grid.Cell( Grid.Rows, 02 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 03, rstconteo("Descrip"), 0
+          Grid.Cell( Grid.Rows, 03 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 04, rstconteo("Linea"), 0
+          Grid.Cell( Grid.Rows, 04 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 05,rstconteo("Marca") , 0
+          Grid.Cell( Grid.Rows, 05 ).BackColor = intColor
+                                                                  
+          Grid.CellDetails Grid.Rows, 06,rstconteo("Ubicacion"), 0
+          Grid.Cell( Grid.Rows, 06 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 07,rstconteo("Existencia"), 0
+          Grid.Cell( Grid.Rows, 07 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 08, rstconteo("Conteo"), 0
+          Grid.Cell( Grid.Rows, 08 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 09, rstconteo("Diferencia"), 0
+          Grid.Cell( Grid.Rows, 09 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 10, rstconteo("Observ"), 0
+          Grid.Cell( Grid.Rows, 10 ).BackColor = intColor
+
+          rstconteo.MoveNext
+    Wend   
+End Sub
+
+
+
+
+Sub Form_KeyDown()
+         
+    ' Cuando presionamos la tecla F5
+    if KeyCodeForm = 116 Then
+
+       Controles("txtArticulo").SetFocus 'Colocamos foco en artículo
+    end if
+
+    if KeyCodeForm = 115 Then
+Select case chklector
+		case 0
+			chklector.value =1
+		case 1
+			chklector.value =0
+end select
+
+    end if
+
+End Sub
+
+Sub Text_KeyDown()
+    Dim rstProds,Busqueda
+
+on error resume next
+    if ControlEvento.Tag = "txtArticulo" Then
+       If KeyCode = 40 Then
+          Set Busqueda = CreateObject ("MyBBusquedaArticulos.BusquedaArticulos")
+          Set Busqueda.Ambiente = Ambiente
+          Set Busqueda.Control = txtArticulo
+          Busqueda.MuestraForma
+          Set Busqueda = Nothing
+          txtArticulo.SetFocus
+          Exit Sub
+       End if
+    end if
+
+End Sub     
+
+Sub Text_LostFocus()
+
+txtArticulo=Replace(txtArticulo, "'", "-")
+
+Set rstclaveok = CreaRecordset ("Select articulo from clavesadd where clave = '"&txtArticulo&"' ",Ambiente.Connection)
+if  not rstclaveok.eof then
+txtArticulo= rstclaveok("articulo")
+end if
+
+
+
+
+    If ControlEvento.Tag = "txtArticulo" Then
+
+       Set rstProds = Rst ("SELECT * FROM prods WHERE articulo = '" & Controles("txtArticulo").Text &"'", Ambiente.Connection)
+       SET RSTMOVSINVUM= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&articulo&"'  )AND ARTICULO='"&articulo&"' ", AMBIENTE.CONNECTION)
+
+       If not rstProds.EOF Then 
+
+			txtArticulo=UCASE(rstprods("ARTICULO"))
+			txtDescrip = UCASE(rstprods("Descrip"))
+			UPC= rstProds("DESCRIP")  
+			COSTO= rstProds("COSTO_U") 
+			PRECIO= rstProds("PRECIO1")
+			ES=VAL2(rstProds("EXISTENCIA"))
+		set rstobserv = CreaRecordset ("Select observ from "&bdconteo&" where articulo ='"&txtArticulo&"'",Ambiente.Connection) 
+			if  not rstobserv.eof  then
+				txtObserv= rstobserv(0)
+			end if
+
+		if chklector.value=1 then
+			txtCant=1
+			call aplica_conteo ()
+			call fillgrid ()
+			call limpia_campos()
+			txtArticulo.setfocus
+
+		elseIF chklector.value=0 then
+             on error resume next
+             txtCant.setfocus
+		end if
+
+		END IF
+		end if
+
+
+
+
+
+end sub   
+
+Sub EjecutaReporte(reporte)
+
+    Dim rstReporte
+
+    Set rstReporte = Rst("SELECT * FROM formatosdelta WHERE formato = '" & reporte & "'", Ambiente.Connection )
+
+    If rstReporte.EOF Then
+       Exit Sub
+    End If
+
+	Script.Preview rstReporte("tipo"), rstReporte("codigo"), Ambiente, Me, rstReporte("formato"), ""
+
+
+End Sub 
+
+sub revisa_bd()
+	set rstbds = CreaRecordSet ("Select * From INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '"&bdconteo&"'",Ambiente.Connection)
+
+if rstbds.eof then
+Ambiente.Connection.Execute ("CREATE TABLE dbo."&bdconteo&" "&_
+"   (Articulo varchar(100) NULL,"&_
+"    Descrip varchar(200) NULL,"&_
+"    Linea varchar(50) NULL, "&_
+"    Marca varchar(50) NULL, "&_  
+"	Ubicacion varchar(50) NULL,     "&_
+"	Existencia float NULL,     "&_
+"	Conteo float NULL, "&_
+"	Diferencia float NULL,"&_
+"	Fecha datetime NULL,          "&_ 
+"	hora varchar(8) NULL,          "&_
+"	imagen varchar(200) NULL,          "&_
+"	Observ varchar(200) NULL)")
+end if  
+
+end sub 
+
+sub check_Click()
+
+
+Select Case Controlevento.tag
+
+    
+	Case "chkRevu" 
+		If chkRevu.value=1 then
+		chkRevu.value =1
+		Msgbox "Se activo 'Revisión Unica' para optimizar el proceso de captura",64
+		txtArticulo.setfocus
+		else
+		Msgbox "Se desactivo 'Revisión Unica' Se mostraran la lista completa de productos",64
+		txtArticulo.setfocus
+		exit sub
+		end if  
+
+	Case "chkLector" 
+		If chkLector.value=1 then
+		chkLector.value =1
+		Msgbox "Se activo la captura automatica con lector de Codigos ",64
+		txtArticulo.setfocus
+		else
+		Msgbox "Se desactivo la captura automatica con lector de Codigos",64
+		txtArticulo.setfocus
+		exit sub
+		end if  
+
+	Case "chkFiltros" 
+		If chkFiltros.value=1 then
+		chkFiltros.value =1
+		Msgbox "Se utilizaran los filtros adminsitrativos revisa tus datos",64 
+        call filtros  
+		txtArticulo.setfocus
+		else
+		Msgbox "Se Utilizara la Lista completa de prodcutos de inventario, esto puede hacer que tu computadora tarde",64
+		txtArticulo.setfocus
+		varfil=""
+
+		exit sub
+		end if 
+	Case "chkField3" 
+		If chkField3.value=1 then
+			if question("Estas Apunto de activar la Captura Directa, esto afectara directamente la existencia,¿Deseas Continuar? ") =true then
+			   ajusted=1
+			end if
+		else
+			if question("Desactivaras la captura directa,¿Deseas Continuar? ") =true then
+                ajusted=0
+				exit sub
+			end if
+        end if
+
+End Select	
+end sub   
+
+Sub limpia_campos()
+txtarticulo=""
+txtDescrip=""
+txtCant=""
+txtObserv=""
+end sub  
+
+sub llena_imagen
+
+       Set rstArticulo = CreaRecordSet( "SELECT prods.descrip, prods.articulo, prods.precio1, prods.precio2, prods.precio3, prods.c2, prods.c3, prods.imagen, prods.url,prods.talla,prods.existencia, impuestos.valor FROM prods, impuestos WHERE articulo = '" & txtArticulo & "' AND prods.impuesto = impuestos.impuesto", Ambiente.Connection )
+
+       If not rstArticulo.EOF Then
+
+          cHtml = ""
+          cHtml = cHtml & "<html>"
+          cHtml = cHtml & "<head>"
+          cHtml = cHtml & "<title>Artículo: " & Trim(rstArticulo("Descrip")) & "</title>"
+          cHtml = cHtml & "</head>"
+          cHtml = cHtml & "<body>"
+
+          cHtml = cHtml & "<table width='100%' border='1' cellspacing='0' cellpadding='5'>"  
+
+          cHtml = cHtml & "<tr>"
+          cHtml = cHtml & "<td align='CENTER'>"
+
+             
+			if Not clEmpty( Trim( cNull(rstArticulo("imagen")) ) ) Then
+             cHtml = cHtml & "<img border='0' src='" & Url_Imagen & "' width='"&Ancho_WebBrowser&"' >"
+			end if
+'			cHtml = cHtml & "<img src='& Url_Imagen ' style='LEFT: 0px; TOP: POSITION: absolute; WIDTH: '"&Ancho_WebBrowser&"'; HEIGHT:100%' >"
+
+
+          cHtml = cHtml & "</td>"
+
+          cHtml = cHtml & "<td valign='top'><font face='Verdana,Geneva,Arial,Helvetica,sans-serif' size='2'>"
+          cHtml = cHtml & "<p><b>" & Trim(rstArticulo("Descrip")) & "</b></p>"
+          cHtml = cHtml & "<p><b>Precio de lista: " & Trim(Formato( rstArticulo("Precio1") * (1 + (Val2(rstArticulo("valor"))/100)), "$###,###.00")) & "</b></p>"
+if val2(rstArticulo("Precio2"))>0 then 
+
+          cHtml = cHtml & "<p><b>Despues de: " &  rstArticulo("c2")&" "& Trim(Formato( rstArticulo("Precio2") * (1 + (Val2(rstArticulo("valor"))/100)), "$###,###.00")) & "</b></p>"
+end if
+if val2(rstArticulo("Precio3"))>0 then 
+          cHtml = cHtml & "<p><b>Despues de: " &  rstArticulo("c3")&" "& Trim(Formato( rstArticulo("Precio3") * (1 + (Val2(rstArticulo("valor"))/100)), "$###,###.00")) & "</b></p>"
+end if
+if not isEmpty(rstArticulo("Talla")) then 
+          cHtml = cHtml & "<p><b>Talla: " & rstArticulo("Talla")& "</b></p>"
+end if 
+         cHtml = cHtml & "<p><b>Existencia: " & rstArticulo("Existencia") & "</b></p>"
+         cHtml = cHtml & "<p></b></p>"
+         cHtml = cHtml & "<p><b>CLAVES ADICIONALES</b></p>"
+          cHtml = cHtml & "</font>"
+          cHtml = cHtml & "</td>"
+          cHtml = cHtml & "</tr>" 
+
+
+
+          Set rstClavesAdd = CreaRecordSet( "SELECT * FROM clavesadd WHERE articulo = '" & txtArticulo & "'", Ambiente.Connection )
+          n = 0
+
+          While Not rstClavesAdd.EOF
+
+                    n = n + 1
+
+                   if n = 1 Then 
+                      cHtml = cHtml & "<tr bgcolor='#99E2FF'>"
+                   else
+                      cHtml = cHtml & "<tr bgcolor='#ffffff'>"
+                      n = 0
+                   end if
+
+                   cHtml = cHtml & "<td align='CENTER'>"           
+'                  cHtml = cHtml & "<img border='0' src='" & Url_Imagen & "' width='100' >"
+                   cHtml = cHtml & "</td>"
+
+                   cHtml = cHtml & "<td valign='top'><font face='Verdana,Geneva,Arial,Helvetica,sans-serif' size='2'>"
+                           cHtml = cHtml & "<p>" & Trim(rstClavesadd("CLAVE")) & "</p>"
+                           cHtml = cHtml & "</font>"
+                           cHtml = cHtml & "</td>"
+                           cHtml = cHtml & "</tr>"
+
+         
+
+               rstClavesAdd.MoveNext
+          Wend
+
+          cHtml = cHtml & "</table>"
+
+          cHtml = cHtml & "</body></html>"     
+          cHtml = cHtml & "</body>"
+          cHtml = cHtml & "</html>"
+
+'          cHtml = "<center><b>" & Ambiente.Empresa & "<br>SIN IMAGEN</b></center>" 
+'      End If
+
+'      CreaHTML "", (cHtml)
+
+
+WebBrowser.Navigate "about:"&cHtml 
+
+cHtml=""
+end if
+
+
+end sub 
+
+Sub Grid_SelecctionChange()
+    
+    ' Grid.Cell indica una celda en especial
+    ' indicando el renglon y la columna
+    ' Text indica el valor de la celda
+set rstprodinfo = CreaRecordset ("Select * from Prods where Articulo='"&Grid.Cell( Grid.SelectedRow, 2 ).Text&"'",Ambiente.Connection)
+	if rstprodinfo("Impuesto")="IVA" then
+	precio = rstprodinfo("precio1")*1.16
+	else
+	precio = rstprodinfo("precio1")  
+	end if
+
+    txtinfo= "$ "&formato(precio,"###,###.00")
+    Url_Imagen = rstprodinfo("imagen") 
+    llena_imagen
+	FILLGRIDKARDEX()
+    Busca_VP   
+	txtArticulo.text=Grid.Cell( Grid.SelectedRow, 2 ).Text  
+	txtDescrip.text= rstprodinfo("Descrip") 
+
+End Sub   
+
+sub filtros()
+
+
+if txtArticulo="" then
+AR=""
+else
+AR=" and Articulo='"& txtArticulo &"' "
+end if
+
+if txtexis="" then
+EX=""
+else
+EX=" and existencia="& txtexis &" "
+end if
+
+if txtconteo="" then
+CO=""
+else
+CO=" and Conteo="& txtconteo  &" "
+end if
+
+if txtdif="" then
+DI=""
+else
+DI=" and Diferencia="& txtdif &" "
+end if
+
+if DBLinea="Linea" or DBLinea="" then
+LI=""
+else
+LI=" and Linea='"& DBLinea.text &"' "
+end if  
+
+if DBMarca="Marca" or DBMarca=""then
+MA=""
+else
+MA=" and Marca='"& DBMarca.text &"' "
+end if
+
+if DBubic="Ubicación" or DBMarca=""then
+UB=""
+else
+UB=" and Ubicacion='"& DBubic.text &"' "
+end if 
+
+if txtsql="" then
+CSQL=""
+else
+CSQL=" and ("& txtsql &") "
+end if
+
+
+varfil = " "&AR&EX&CO&DI&LI&MA&UB&CSQL
+
+end sub     
+
+
+sub form_unload()
+
+varfil=""
+
+end sub 
+
+
+Sub ImportaInventario( excelConnection )
+    Dim rstProductos
+    Dim bolAfectaInventario    
+    Dim rstArticulo
+    Dim rstClaveAdd
+    Dim Articulos 
+    Dim Ajuste  
+    Dim rstImpuesto
+                      
+    Ambiente.Connection.Execute "UPDATE prods SET etiquetas = 0"
+
+    bolAfectaInventario = True
+    
+    Set rstProductos = CreaRecordSet( "SELECT * FROM "&bdconteo&"", Ambiente.connection)
+    Set Query = NewQuery()    
+    Set Query.Connection = Ambiente.Connection
+
+    Set Articulos = CreateObject( "MyBArticulos.Articulos" )
+    Set Articulos.Ambiente = Ambiente                    
+
+    nEntrada = 0
+    nSalida = 0
+
+    While Not rstProductos.EOF 
+          
+          If Not clEmpty( "" & (rstProductos("Articulo")) ) Then
+             If Not clEmpty( "" & (rstProductos("Descripción")) ) Then
+                
+                'Articulos.recalculoDeInventario rstProductos("Código del producto"), Ambiente, False
+                Set rstArticulo = CreaRecordSet( "SELECT articulo, existencia FROM prods WHERE articulo = '" & rstProductos("Articulo") & "'", Ambiente.Connection )
+                
+                Query.Reset
+
+                If rstArticulo.EOF Then
+                   Query.strState = "INSERT"
+                Else  
+                   Query.strState = "UPDATE"
+                   Query.Condition = "articulo = '" & rstProductos("Código del producto") & "'"
+                End If  
+
+                Query.AddField "prods","articulo", rstProductos("Código del producto")
+                Query.AddField "prods","descrip",rstProductos("Descripción")
+                Query.AddField "prods","linea", rstProductos("Linea")
+                Query.AddField "prods","marca", "SYS"
+                Query.AddField "prods","fabricante", "SYS"
+                Query.AddField "prods","precio1", FDec( rstProductos("Precio de venta") ) 
+                Query.AddField "prods","costo_u", FDec( rstProductos("Costo ultimo") )    
+                'Query.AddField "prods","etiquetas", Val2( rstProductos("Existencia") )
+                                                                                            
+				If Val2(rstProductos("Impuesto")) > 0 Then
+                	Set rstImpuesto = CreaRecordSet( "SELECT * FROM impuestos WHERE valor = " & _
+					FDec( rstProductos("Impuesto") ), Ambiente.Connection )	
+				Else
+       				If ClAt("0", Trim(rstProductos("Impuesto"))) > 0 AND Len(Trim(rstProductos("Impuesto"))) = 1 Then
+	                	Set rstImpuesto = CreaRecordSet( "SELECT * FROM impuestos WHERE valor = " & _
+						FDec( rstProductos("Impuesto") ), Ambiente.Connection )
+					Else
+                    	Set rstImpuesto = CreaRecordSet( "SELECT * FROM impuestos WHERE impuesto = '" & _
+						rstProductos("Impuesto") & "'", Ambiente.Connection )
+					End If
+                End If
+
+                If rstImpuesto.EOF Then
+                   cImpuesto = "SYS"
+                Else
+                   cImpuesto = rstImpuesto( "impuesto" )                  
+                End If
+
+                Query.AddField "prods","impuesto", cImpuesto
+				Query.AddField "prods","unidad", Trim(rstProductos("Unidad"))
+                Query.AddField "prods","paraventa", 1
+                Query.AddField "prods","invent", 1
+                Query.CreateQuery 
+                Query.Execute                                                   
+
+				Query.Reset 
+                         
+                If Not IsNull( rstProductos("Existencia") ) Then
+
+                   Ajuste = FDec( rstProductos("Existencia") )' - Val2( rstArticulo("Existencia") )
+                   AfectandoInventario rstProductos("Código del producto"), Ajuste
+                   'Articulos.recalculoDeInventario rstProductos("Código del producto"), Ambiente, False
+                      
+                   If Ajuste <> 0 Then
+                      If Ajuste > 0 Then      
+                         nEntrada = CreaEntrada( nEntrada,  rstProductos("Código del producto"), Ajuste,  FDec( rstProductos("Costo ultimo") ), rstProductos("Descripción") )
+                      Else
+                         nSalida = CreaSalida( nSalida,  rstProductos("Código del producto"), Ajuste,  FDec( rstProductos("Precio de venta") ), rstProductos("Descripción") )
+                      End If                   
+				   Else
+					  Query.Reset
+					  Query.SQL = "UPDATE prods SET costo_u = " & FDec( rstProductos("Costo ultimo") ) & _
+					              " WHERE articulo = '" & rstProductos("Código del producto") & "'"
+					  Query.Execute
+                   End If
+
+                End If
+
+                If Not clEmpty( "" & rstProductos("Código de barras") ) Then
+
+                   Set rstClaveAdd = CreaRecordSet( "SELECT clave FROM clavesadd WHERE clave = '" & rstProductos("Código de barras") & "'", Ambiente.Connection )
+
+                   Query.Reset
+
+                   If rstClaveAdd.EOF Then
+                      Query.strState = "INSERT"
+                   Else  
+                      Query.strState = "UPDATE"
+                      Query.Condition = "clave = '" & rstProductos("Código de barras") & "'"
+                   End If 
+ 
+                   Query.AddField "clavesadd","Clave", rstProductos("Código de barras")
+                   Query.AddField "clavesadd","Dato1", ""
+                   Query.AddField "clavesadd","Usuario", Ambiente.Uid
+                   Query.AddField "clavesadd","usuFecha", Date
+				   Query.AddField "clavesadd","usuHora", Formato( Time, "hh:mm:ss" )
+                   Query.AddField "clavesadd","Dato2", ""
+                   Query.AddField "clavesadd","Articulo", rstProductos("Código del producto")
+                   Query.AddField "clavesadd","Cantidad", 1
+                   Query.AddField "clavesadd","Unidad", ""
+
+                   If bolAfectaInventario = True Then
+                      Query.AddField "clavesadd","Existencia", 0
+                   End If
+                   
+                   Query.AddField "clavesadd","Libre", 0
+                   Query.AddField "clavesadd","Exportado", 0
+                   Query.AddField "clavesadd","Precio", 0
+                   Query.AddField "clavesadd","imagen", ""
+                   Query.AddField "clavesadd","etiquetas", 0
+                   Query.CreateQuery
+                   Query.Execute
+
+                End If
+
+             End If
+          End If
+
+          Detalle.Caption = "" & rstProductos("Descripción")           
+
+          rstProductos.MoveNext
+    Wend                                                        
+
+    MyMessage "Catálogo importado"                            
+
+    'If Question( "Desea imprimir etiquetas de codigo de barras", 1 ) = True Then
+    '   Script.RunProcess "ZEBRA2844", Me, Ambiente  
+    'End If
+
+End Sub
+
+
+Sub AfectandoInventario( strArticulo, Existencia )
+    Dim rstProd
+    Dim n
+    Dim Query
+    Dim rstInvInicial
+                
+    Set Query = NewQuery()    
+    Set Query.Connection = Ambiente.Connection
+
+    Set rstProd = CreaRecordSet( "SELECT articulo, existencia, costo_u FROM prods WHERE articulo = '" & strArticulo & "'", Ambiente.Connection )
+    n = n + 1                                   
+
+    If Existencia = 0 Then
+       Exit Sub
+    End If
+
+    Set MovInv = CreateObject( "MyBInventario.Inventario" )
+    Set MovInv.Ambiente = Ambiente
+
+    MovInv.FechaMov = Date
+    MovInv.uId = Me.Ambiente.uId
+    MovInv.EntradaSalida = "S"
+    MovInv.cMetodo = Me.Ambiente.costeo
+    MovInv.EstacionSalida = Trim(Ambiente.Estacion)
+
+    While Not rstProd.EOF 
+
+          n = n + 1
+          
+          Query.Reset
+          Query.strState = "INSERT"
+          Query.AddField "movsinv","MOVIMIENTO", 1 
+
+          If Existencia > 0 Then     
+             MovInv.EntradaSalida = "E"
+             MovInv.nMovimiento = 1
+             MovInv.TipoMovim = "EX+"
+             MovInv.NoMovim = 1
+             MovInv.TipoOperacion = "EX+"
+             MovInv.nCantidad = Existencia
+             MovInv.AfectaCosto = True
+          Else
+             MovInv.EntradaSalida = "S"
+             MovInv.nMovimiento = 1
+             MovInv.TipoMovim = "EX-"
+             MovInv.NoMovim = 1
+             MovInv.TipoOperacion = "EX-"
+             MovInv.nCantidad = Existencia * -1
+          End If                   
+
+          MovInv.nPrecio = rstProd("costo_u")
+          MovInv.nAlmacen = 1          
+          MovInv.cArticulo = strArticulo  
+          MovInv.AfectaInventario                                                        
+ 
+
+          Set rstInvInicial = CreaRecordSet( "SELECT * FROM invinicial WHERE articulo = '" & rstProd("articulo") & "'", _
+              Ambiente.Connection )
+
+          If rstInvInicial.EOF Then   
+             Query.Reset
+             Query.strState = "INSERT"
+             Query.AddField "invinicial","fecha", DateSerial( 2000, 01, 01 )
+             Query.AddField "invinicial","articulo", rstProd("articulo")
+             Query.AddField "invinicial","existencia", Existencia
+             Query.AddField "invinicial","costo", rstProd("costo_u")
+             Query.CreateQuery
+             Query.Execute
+          End If      
+
+          rstProd.MoveNext
+
+    Wend    
+
+End Sub
+
+
+Function FDec( Number )
+                 
+    FDec = Replace( "" & Number, ",", "." )
+
+End Function
+
+
+Function CreaEntrada( Entrada, Articulo, Cantidad, Costo, Descripcion )
+    Dim Query	          
+    Dim rstArticulo
+
+    Set Query = NewQuery()
+	Set Query.Connection = Ambiente.Connection
+
+    If Entrada = 0 Then
+	   Query.Reset
+       Query.strState = "INSERT"
+  
+       Entrada = TraeSiguiente( "MovEnt", Ambiente.Connection ) 
+       Query.AddField "entradas", "entrada", Entrada
+       Query.AddField "entradas", "ocupado", 1
+       Query.AddField "entradas", "f_emision", Date
+       Query.AddField "entradas", "tipo_doc", "EX+"
+       Query.AddField "entradas", "importe", 0
+       Query.AddField "entradas", "costo", 0
+       Query.AddField "entradas", "almacen", 1
+       Query.AddField "entradas", "estado", "CO"
+       Query.AddField "entradas", "observ", vbNullString
+       Query.AddField "entradas", "tipo_cam", 1
+       Query.AddField "entradas", "moneda", Ambiente.Moneda
+       Query.AddField "entradas", "datos", vbNullString
+       Query.AddField "entradas", "usuario", Ambiente.uId
+       Query.AddField "entradas", "usufecha", Date
+	   On Error Resume Next
+       Query.AddField "entradas", "usuhora", Libreria.Formato(Time, "hh:mm:ss")
+	   On Error GoTo 0
+       Query.CreateQuery
+       Query.Execute
+    End If 
+    
+    Query.Reset
+    Query.strState = "INSERT"
+    Query.AddField "entpart","ENTRADA", Entrada
+    Query.AddField "entpart","TIPO_DOC", "EX+"
+    Query.AddField "entpart","NO_REFEREN", Entrada
+    Query.AddField "entpart","ARTICULO", Articulo
+    Query.AddField "entpart","CANTIDAD", Cantidad
+    Query.AddField "entpart","PRECIO", Costo
+    Query.AddField "entpart","OBSERV", Descripcion
+    Query.AddField "entpart","PARTIDA", 0
+    Query.AddField "entpart","ID_ENTRADA", TraeSiguiente( "entpart", Ambiente.Connection )
+    Query.AddField "entpart","Usuario", Ambiente.Uid
+    Query.AddField "entpart","UsuFecha", Date
+    Query.AddField "entpart","UsuHora", Libreria.Formato( Time, "hh:mm:ss" )
+    Query.AddField "entpart","PRCANTIDAD", 0
+    Query.AddField "entpart","PRDESCRIP", ""
+    Query.AddField "entpart","CLAVEADD", ""
+    Query.CreateQuery
+    Query.Execute   
+
+    CreaEntrada = Entrada
+
+End Function
+
+
+
+Function CreaSalida( Salida, Articulo, Cantidad, Precio, Descripcion )
+    Dim Query	          
+    Dim rstArticulo
+
+    Set Query = NewQuery()
+	Set Query.Connection = Ambiente.Connection
+
+    If Salida = 0 Then
+	   Query.Reset
+       Query.strState = "INSERT"
+  
+       Salida = TraeSiguiente( "MovSal", Ambiente.Connection ) 
+
+       Query.AddField "salidas","Salida", Salida
+       Query.AddField "salidas","ocupado", 1
+       Query.AddField "salidas","tipo_doc", "EX-"
+       Query.AddField "salidas","F_EMISION", Date
+       Query.AddField "salidas","IMPORTE", 0
+       Query.AddField "salidas","COSTO",  0
+       Query.AddField "salidas","ALMACEN", 1
+       Query.AddField "salidas","ESTADO", "CO"
+       Query.AddField "salidas","OBSERV", "Salida automática por excel"
+       Query.AddField "salidas","DATOS", ""
+       Query.AddField "salidas","USUARIO", Ambiente.Uid
+       Query.AddField "salidas","USUFECHA", Date
+       Query.AddField "salidas","USUHORA", Libreria.Formato( Time, "hh:mm:ss" ) 
+       Query.AddField "salidas","traspaso", 0
+       Query.AddField "salidas","almt", 0
+       Query.AddField "salidas","estraspaso", 0
+       Query.AddField "salidas","sucursal", ""
+       Query.AddField "salidas","esparasucursal", 0
+       Query.AddField "salidas","entsuc", 0
+       Query.AddField "salidas","folio", TraeSiguiente(Trim(Ambiente.Estacion) & "salida", Ambiente.Connection)
+       Query.AddField "salidas","estacion", Ambiente.Estacion
+       Query.CreateQuery
+       Query.Execute
+    End If 
+    
+    Query.Reset
+    Query.strState = "INSERT"
+    Query.AddField "salpart","SALIDA", Salida
+    Query.AddField "salpart","TIPO_DOC", "EX-"
+    Query.AddField "salpart","NO_REFEREN", Salida
+    Query.AddField "salpart","ARTICULO", Articulo
+    Query.AddField "salpart","CANTIDAD", Cantidad * -1
+    Query.AddField "salpart","PRECIO", Precio
+    Query.AddField "salpart","OBSERV", Descripcion
+    Query.AddField "salpart","PARTIDA", 0
+    Query.AddField "salpart","ID_SALIDA", TraeSiguiente( "salpart", Ambiente.Connection )
+    Query.AddField "salpart","Usuario", Ambiente.Uid
+    Query.AddField "salpart","UsuFecha", Date
+    Query.AddField "salpart","UsuHora", Libreria.Formato( Time, "hh:mm:ss" )
+    Query.AddField "salpart","PRCANTIDAD", 0
+    Query.AddField "salpart","PRDESCRIP", ""
+    Query.AddField "salpart","CLAVEADD", ""
+    Query.AddField "salpart","costo", 0
+    Query.CreateQuery
+    Query.Execute  
+
+    CreaSalida = Salida
+
+End Function
+              
+
+
+Sub FILLGRIDKARDEX()
+
+    Grid2.Clear True
+    Grid2.AddColumn ,"MOV"           , 0   ,,  50 
+    Grid2.AddColumn ,"NO"            , 0   ,,  80
+    Grid2.AddColumn ,"FECHA"         , 0   ,,  120
+    Grid2.AddColumn ,"E/S"           , 0   ,,  50 
+    Grid2.AddColumn ,"CANTIDAD"      , 0   ,,  50 
+    Grid2.AddColumn ,"EXISTENCIA"    , 0   ,,  50
+
+
+       Set rstKardex = CreaRecordSet( "SELECT top 20 movsinv.articulo, prods.descrip, movsinv.tipo_movim, "&_
+									"movsinv.no_referen, movsinv.f_movim, movsinv.ent_sal, movsinv.cantidad, "&_
+									"movsinv.existencia, movsinv.costo, movsinv.precio_vta As 'Valor de operación', "&_            
+									"movsinv.costopromedio * movsinv.existencia As 'Valor de inventario', movsinv.almacen, "&_
+									"movsinv.exist_alm FROM movsinv INNER JOIN prods ON movsinv.articulo = prods.articulo " &_
+									"WHERE movsinv.consec > 0 AND movsinv.ARTICULO='"&Grid.Cell( Grid.SelectedRow, 2 ).Text&"' ORDER BY movsinv.consec desc", Ambiente.Connection )
+
+    bolColor = True 
+  
+    While Not rstKardex.EOF 
+
+          Grid2.AddRow           
+
+          If bolColor Then
+             intColor = vbGreen
+             bolColor = False
+          Else
+             intColor = vbWhite
+             bolColor = True
+          End If                      
+
+          If rstKardex("ent_sal")="E" Then
+				MOV= rstKardex("CANTIDAD")
+             intColor =rgb(0,191,255)
+          End If 
+
+          If rstKardex("ent_sal")="S" Then
+				MOV= val2(rstKardex("CANTIDAD"))*-1
+             intColor = rgb(255,218,185)
+          End If 
+
+
+          Grid2.CellDetails Grid2.Rows, 01, rstKardex("tipo_movim"), 0
+          Grid2.Cell( Grid2.Rows, 01 ).BackColor = intColor
+
+          Grid2.CellDetails Grid2.Rows, 02, rstKardex("no_referen"), 0
+          Grid2.Cell( Grid2.Rows, 02 ).BackColor = intColor
+
+          Grid2.CellDetails Grid2.Rows, 03, rstKardex("f_movim"), 0
+          Grid2.Cell( Grid2.Rows, 03 ).BackColor = intColor
+
+          Grid2.CellDetails Grid2.Rows, 04,rstKardex("ent_sal") , 0
+          Grid2.Cell( Grid2.Rows, 04 ).BackColor = intColor
+                                                                  
+          Grid2.CellDetails Grid2.Rows, 05,mov, 0
+          Grid2.Cell( Grid2.Rows, 05 ).BackColor = intColor
+
+          Grid2.CellDetails Grid2.Rows, 06, rstKardex("existencia"), 0
+          Grid2.Cell( Grid2.Rows, 06 ).BackColor = intColor
+
+          rstKardex.MoveNext
+    Wend
+CONTEOS 
+  
+End Sub
+
+SUB CONTEOS()
+
+
+SET rstcont= crearecordset("SELECT TOP 3 * FROM Information_Schema.Tables WHERE TABLE_NAME LIKE '"&bdconteo&"%' ORDER BY TABLE_NAME  DESC", Ambiente.Connection)
+
+i=0
+while not rstcont.eof 
+
+set rstcon1 = crearecordset("select conteo from "&rstcont("table_name")&" where ARTICULO='"&Grid.Cell( Grid.SelectedRow, 2 ).Text&"' ", Ambiente.Connection)
+
+if not rstcon1.eof then 
+
+	if i = 0 then
+	
+	txtFields9= rstcon1("conteo")
+	lblLabel15.caption=right(rstcont("table_name"),8)
+	end if
+
+	if i = 1 then
+	
+	txtFields10= rstcon1("conteo")
+	lblLabel16.caption=right(rstcont("table_name"),8)
+	end if
+
+	if i = 2 then
+	
+	txtFields11=rstcon1("conteo")
+	lblLabel17.caption=right(rstcont("table_name"),8)
+	end if
+
+i=i+1
+end if
+
+
+rstcont.movenext
+wend
+ 
+END SUB
+
+Sub Busca_VP ()
+
+SET rsvp = Crearecordset("Select * from partvta inner join ventas on partvta.venta = ventas.venta where partvta.ARTICULO='"&Grid.Cell( Grid.SelectedRow, 2 ).Text&"' and ventas.tipo_doc='PE' ",Ambiente.connection)
+
+if not rsvp.eof then
+txtFields13.text= rsvp("venta")
+	Set rscli =Crearecordset("select nombre from clients where cliente='"&rsvp("Cliente")&"'",Ambiente.connection)
+	if not rscli.eof then
+	txtFields12.text= rscli("nombre")
+	end if
+ lblLabel20.caption = rsvp("f_emision")
+else
+txtFields13.text=""
+txtFields13.text=""
+lblLabel20.caption="INFO"
+end if
+end sub
+
+'''''======================== Para Ajuste De inventario con Entradas y Salidas
+
+
+
+Sub ImportaInventario( )
+    Dim rstProductos
+    Dim bolAfectaInventario    
+    Dim rstArticulo
+    Dim rstClaveAdd
+    Dim Articulos 
+    Dim Ajuste  
+    Dim rstImpuesto
+                      
+    Ambiente.Connection.Execute "UPDATE prods SET etiquetas = 0"
+
+    bolAfectaInventario = True
+
+    Set rstProductos = CreaRecordset("Select * from "&bdconteo,Ambiente.Connection)
+    Set Query = NewQuery()    
+    Set Query.Connection = Ambiente.Connection
+
+
+
+
+    Set Articulos = CreateObject( "MyBArticulos.Articulos" )
+    Set Articulos.Ambiente = Ambiente                    
+
+    nEntrada = 0
+    nSalida = 0
+
+    While Not rstProductos.EOF 
+ 
+         
+          If Not clEmpty( "" & (rstProductos("Articulo")) ) Then
+             If Not clEmpty( "" & (rstProductos("Descrip")) ) Then
+                
+'                Articulos.recalculoDeInventario rstProductos("Articulo"), Ambiente, False
+                Set rstArticulo = CreaRecordSet( "SELECT * FROM prods WHERE articulo = '" & rstProductos("Articulo") & "'", Ambiente.Connection )
+                
+                Query.Reset
+
+                If rstArticulo.EOF Then
+                   Query.strState = "INSERT"
+                Else  
+                   Query.strState = "UPDATE"
+                   Query.Condition = "articulo = '" & rstProductos("Articulo") & "'"
+                End If  
+
+                Query.AddField "prods","articulo", rstProductos("Articulo")
+                Query.AddField "prods","descrip",rstProductos("Descrip")
+                Query.AddField "prods","etiquetas", Val2( rstProductos("Diferencia") )
+                                                                                            
+                Query.AddField "prods","paraventa", 1
+                Query.AddField "prods","invent", 1
+                Query.CreateQuery 
+                Query.Execute                                                   
+
+				Query.Reset 
+                         
+                If Not IsNull( rstProductos("Diferencia") ) Then
+
+                   Ajuste = FDec( rstProductos("Diferencia") )' - Val2( rstArticulo("Existencia") )
+                   AfectandoInventario rstProductos("Articulo"), Ajuste
+                   'Articulos.recalculoDeInventario rstProductos("Articulo"), Ambiente, False
+
+                     
+                   If Ajuste <> 0 Then
+                      If Ajuste > 0 Then      
+                         nEntrada = CreaEntrada( nEntrada,  rstProductos("Articulo"), Ajuste,  FDec( rstArticulo("Costo_u") ), rstArticulo("Descrip") )
+                      Else
+                         nSalida = CreaSalida( nSalida,  rstProductos("Articulo"), Ajuste,  FDec( rstArticulo("Precio1") ), rstArticulo("Descrip") )
+                      End If                   
+                   End If
+
+                End If
+
+             End If
+          End If
+
+
+          rstProductos.MoveNext
+    Wend                                                        
+
+    MyMessage "Tus ajustes fueron procesados"                            
+
+'    If Question( "Desea imprimir etiquetas de codigo de barras", 1 ) = True Then
+'  
+'       Script.RunProcess "AZEBRAUSBQ8", Me, Ambiente
+'  
+'    End If
+
+End Sub
+
+
+Sub AfectandoInventario( strArticulo, Existencia )
+    Dim rstProd
+    Dim n
+    Dim Query
+    Dim rstInvInicial
+                
+    Set Query = NewQuery()    
+    Set Query.Connection = Ambiente.Connection
+
+    Set rstProd = CreaRecordSet( "SELECT articulo, existencia, costo_u FROM prods WHERE articulo = '" & strArticulo & "'", Ambiente.Connection )
+    n = n + 1                                   
+
+    If Existencia = 0 Then
+       Exit Sub
+    End If
+
+    Set MovInv = CreateObject( "MyBInventario.Inventario" )
+    Set MovInv.Ambiente = Ambiente
+
+    MovInv.FechaMov = Date
+    MovInv.uId = Me.Ambiente.uId
+    MovInv.EntradaSalida = "S"
+    MovInv.cMetodo = Me.Ambiente.costeo
+    MovInv.EstacionSalida = Trim(Ambiente.Estacion)
+
+    While Not rstProd.EOF 
+
+          n = n + 1
+          
+          Query.Reset
+          Query.strState = "INSERT"
+          Query.AddField "movsinv","MOVIMIENTO", 1 
+
+          If Existencia > 0 Then     
+             MovInv.EntradaSalida = "E"
+             MovInv.nMovimiento = 1
+             MovInv.TipoMovim = "EX+"
+             MovInv.NoMovim = 1
+             MovInv.TipoOperacion = "EX+"
+             MovInv.nCantidad = Existencia
+             MovInv.AfectaCosto = True
+          Else
+             MovInv.EntradaSalida = "S"
+             MovInv.nMovimiento = 1
+             MovInv.TipoMovim = "EX-"
+             MovInv.NoMovim = 1
+             MovInv.TipoOperacion = "EX-"
+             MovInv.nCantidad = Existencia * -1
+          End If                   
+
+          MovInv.nPrecio = rstProd("costo_u")
+          MovInv.nAlmacen = 1          
+          MovInv.cArticulo = strArticulo  
+          MovInv.AfectaInventario                                                        
+ 
+
+          Set rstInvInicial = CreaRecordSet( "SELECT * FROM invinicial WHERE articulo = '" & rstProd("articulo") & "'", _
+              Ambiente.Connection )
+
+          If rstInvInicial.EOF Then   
+             Query.Reset
+             Query.strState = "INSERT"
+             Query.AddField "invinicial","fecha", DateSerial( 2000, 01, 01 )
+             Query.AddField "invinicial","articulo", rstProd("articulo")
+             Query.AddField "invinicial","existencia", Existencia
+             Query.AddField "invinicial","costo", rstProd("costo_u")
+             Query.CreateQuery
+             Query.Execute
+          End If      
+
+          rstProd.MoveNext
+
+    Wend    
+
+End Sub
+
+
+Function FDec( Number )
+                 
+    FDec = Replace( "" & Number, ",", "." )
+
+End Function
+
+
+Function CreaEntrada( Entrada, Articulo, Cantidad, Costo, Descripcion )
+    Dim Query	          
+    Dim rstArticulo
+
+    Set Query = NewQuery()
+	Set Query.Connection = Ambiente.Connection
+
+    If Entrada = 0 Then
+	   Query.Reset
+       Query.strState = "INSERT"
+  
+       Entrada = TraeSiguiente( "MovEnt", Ambiente.Connection ) 
+       Query.AddField "entradas", "entrada", Entrada
+       Query.AddField "entradas", "ocupado", 1
+       Query.AddField "entradas", "f_emision", Date
+       Query.AddField "entradas", "tipo_doc", "EX+"
+       Query.AddField "entradas", "importe", 0
+       Query.AddField "entradas", "costo", 0
+       Query.AddField "entradas", "almacen", 1
+       Query.AddField "entradas", "estado", "CO"
+       Query.AddField "entradas", "observ", vbNullString
+       Query.AddField "entradas", "tipo_cam", 1
+       Query.AddField "entradas", "moneda", Ambiente.Moneda
+       Query.AddField "entradas", "datos", vbNullString
+       Query.AddField "entradas", "usuario", Ambiente.uId
+       Query.AddField "entradas", "usufecha", Date
+	   On Error Resume Next
+       Query.AddField "entradas", "usuhora", Libreria.Formato(Time, "hh:mm:ss")
+	   On Error GoTo 0
+       Query.CreateQuery
+       Query.Execute
+    End If 
+    
+    Query.Reset
+    Query.strState = "INSERT"
+    Query.AddField "entpart","ENTRADA", Entrada
+    Query.AddField "entpart","TIPO_DOC", "EX+"
+    Query.AddField "entpart","NO_REFEREN", Entrada
+    Query.AddField "entpart","ARTICULO", Articulo
+    Query.AddField "entpart","CANTIDAD", Cantidad
+    Query.AddField "entpart","PRECIO", Costo
+    Query.AddField "entpart","OBSERV", Descripcion
+    Query.AddField "entpart","PARTIDA", 0
+    Query.AddField "entpart","ID_ENTRADA", TraeSiguiente( "entpart", Ambiente.Connection )
+    Query.AddField "entpart","Usuario", Ambiente.Uid
+    Query.AddField "entpart","UsuFecha", Date
+    Query.AddField "entpart","UsuHora", Libreria.Formato( Time, "hh:mm:ss" )
+    Query.AddField "entpart","PRCANTIDAD", 0
+    Query.AddField "entpart","PRDESCRIP", ""
+    Query.AddField "entpart","CLAVEADD", ""
+    Query.CreateQuery
+    Query.Execute   
+
+    CreaEntrada = Entrada
+
+End Function
+
+
+
+Function CreaSalida( Salida, Articulo, Cantidad, Precio, Descripcion )
+    Dim Query	          
+    Dim rstArticulo
+
+    Set Query = NewQuery()
+	Set Query.Connection = Ambiente.Connection
+
+    If Salida = 0 Then
+	   Query.Reset
+       Query.strState = "INSERT"
+  
+       Salida = TraeSiguiente( "MovSal", Ambiente.Connection ) 
+
+       Query.AddField "salidas","Salida", Salida
+       Query.AddField "salidas","ocupado", 1
+       Query.AddField "salidas","tipo_doc", "EX-"
+       Query.AddField "salidas","F_EMISION", Date
+       Query.AddField "salidas","IMPORTE", 0
+       Query.AddField "salidas","COSTO",  0
+       Query.AddField "salidas","ALMACEN", 1
+       Query.AddField "salidas","ESTADO", "CO"
+       Query.AddField "salidas","OBSERV", "Salida automática por excel"
+       Query.AddField "salidas","DATOS", ""
+       Query.AddField "salidas","USUARIO", Ambiente.Uid
+       Query.AddField "salidas","USUFECHA", Date
+       Query.AddField "salidas","USUHORA", Libreria.Formato( Time, "hh:mm:ss" ) 
+       Query.AddField "salidas","traspaso", 0
+       Query.AddField "salidas","almt", 0
+       Query.AddField "salidas","estraspaso", 0
+       Query.AddField "salidas","sucursal", ""
+       Query.AddField "salidas","esparasucursal", 0
+       Query.AddField "salidas","entsuc", 0
+       Query.AddField "salidas","folio", TraeSiguiente(Trim(Ambiente.Estacion) & "salida", Ambiente.Connection)
+       Query.AddField "salidas","estacion", Ambiente.Estacion
+       Query.CreateQuery
+       Query.Execute
+    End If 
+    
+    Query.Reset
+    Query.strState = "INSERT"
+    Query.AddField "salpart","SALIDA", Salida
+    Query.AddField "salpart","TIPO_DOC", "EX-"
+    Query.AddField "salpart","NO_REFEREN", Salida
+    Query.AddField "salpart","ARTICULO", Articulo
+    Query.AddField "salpart","CANTIDAD", Cantidad * -1
+    Query.AddField "salpart","PRECIO", Precio
+    Query.AddField "salpart","OBSERV", Descripcion
+    Query.AddField "salpart","PARTIDA", 0
+    Query.AddField "salpart","ID_SALIDA", TraeSiguiente( "salpart", Ambiente.Connection )
+    Query.AddField "salpart","Usuario", Ambiente.Uid
+    Query.AddField "salpart","UsuFecha", Date
+    Query.AddField "salpart","UsuHora", Libreria.Formato( Time, "hh:mm:ss" )
+    Query.AddField "salpart","PRCANTIDAD", 0
+    Query.AddField "salpart","PRDESCRIP", ""
+    Query.AddField "salpart","CLAVEADD", ""
+    Query.AddField "salpart","costo", 0
+    Query.CreateQuery
+    Query.Execute  
+
+    CreaSalida = Salida
+
+End Function           
+
+'---------   Comentario  cmesit@gmail.com (044)5510167267
+
+'----------------------------------------------------------------------------------
+'Modulo de Captura Inventario Directo 
+
+sub rev_dbok
+if bdconteo="" then
+mymessage "Ingresa un nombre de base de datos valido"
+exit sub
+end if   
+
+if bdconteo=Ucase("CMESITINV_") then
+mymessage "Ingresa un nombre de base de datos valido"
+exit sub
+end if  
+end sub
+
+SUB APLICA_CAMBIOS ()
+		txtArticulo.setfocus
+
+		SET RSTMOVSINV= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&txtArticulo&"'  AND (TIPO_MOVIM='COM' OR TIPO_MOVIM='"&movim&"') )AND ARTICULO='"&txtArticulo&"' ", AMBIENTE.CONNECTION)
+		SET RSTENT= CREARECORDSET ("SELECT * FROM ENTRADAS WHERE ENTRADA='1' ", AMBIENTE.CONNECTION)
+		SET RSTMOVSINVUM= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&txtArticulo&"'  )AND ARTICULO='"&txtArticulo&"' ", AMBIENTE.CONNECTION)
+'ER = Existencia Real   AJ= Ajuste a realizar ES= Existencia Sistema COMP= Direferncia
+			ER=VAL2(txtCant.TEXT)
+			AJ=ER+(ES*-1)
+			COMP=ES+AJ  
+			me.caption= UPC & " Ext S "& ES & " Ajuste "& AJ   & " Ext Real "&  COMP
+
+			FI= FORMATO (date,"DD-MM-YYYY")
+
+		IF  NOT RSTMOVSINV.EOF THEN  
+			FA= FORMATO (RSTMOVSINV("F_MOVIM"), "DD-MM-YYYY")
+			TM= RSTMOVSINV("TIPO_MOVIM") &" ULTIMO MOVIMIENTO DE TABLA "& RSTMOVSINVUM("TIPO_MOVIM")   
+		ELSE
+			FA= FORMATO ("01-01-1990", "DD-MM-YYYY")
+ON ERROR RESUME NEXT
+			TM="SIN AJUSTE "& "ULTIMO MOV. "& RSTMOVSINVUM("TIPO_MOVIM")  
+		END IF
+
+		'MSGBOX 
+		IF  FA < FI   THEN 
+			 IF  QUESTION ("ESTE PRODUCTO NO TIENE MOVIMIENTO DESEAS CONTINUAR")= TRUE THEN
+			 	CALL ACTUALIZADATOS ()  
+		 	    exit sub
+ 			END IF  
+		ELSE  
+				set rstrevcont = rst("Select * from "&bdconteo&" where ARTICULO='"&txtArticulo&"' ",AMBIENTE.CONNECTION)
+					 
+				IF QUESTION ("SE DETECTO UN MOVIMIENTO RECIENTE, SE CONTARON "&rstrevcont("conteo")&"  "&"SE AGREGARAN "&txtCant.TEXT&" Nueva Existencia "&rstrevcont("conteo")+VAL2(txtCant.TEXT))= FALSE THEN 
+					EXIT SUB
+
+				ELSE 
+
+					IF VAL2(txtCant.TEXT)=0 OR txtCant.TEXT="0" THEN
+						If Question ("¿Deseas Ajsutar a Cero la existencia?")= true then
+			      			ER=0
+							AJ=ER+(ES*-1)
+							COMP=ES+AJ 
+						else
+							exit sub
+						end if 
+					end if
+
+					IF VAL2(txtCant.TEXT)<>0  THEN
+							ER=rstrevcont("conteo")+VAL2(txtCant.TEXT)
+							AJ=ER+(ES*-1)
+							COMP=ES+AJ 
+
+					end if
+                 
+				CALL ACTUALIZADATOS ()
+				exit sub
+ 
+				END IF 
+				
+		END IF
+
+
+
+END SUB
+
+SUB ACTUALIZADATOS () 
+ SET RSTENTPART= CREARECORDSET ("SELECT CONSEC FROM CONSEC WHERE DATO='ENTPART' ", AMBIENTE.CONNECTION)
+ SET RSTMOVSINV= CREARECORDSET ("SELECT * FROM MOVSINV WHERE F_MOVIM = (SELECT MAX (F_MOVIM)FROM MOVSINV WHERE ARTICULO='"&txtArticulo&"'  AND (TIPO_MOVIM='COM' OR TIPO_MOVIM='"&movim&"') )AND ARTICULO='"&txtArticulo&"' ", AMBIENTE.CONNECTION)
+SET RSTENT= CREARECORDSET ("SELECT * FROM ENTRADAS WHERE ENTRADA='1' ", AMBIENTE.CONNECTION)
+
+ENTCONSEC= VAL2(RSTENTPART(0))+1
+
+sqlmovs = "INSERT MOVSINV "&_
+"( OPERACION,"&_
+"  MOVIMIENTO,"&_
+"  ENT_SAL,"&_
+"  TIPO_MOVIM,"&_
+"  NO_REFEREN,"&_
+"  ARTICULO,"&_
+"  F_MOVIM,"&_
+"  hora,"&_
+"  CANTIDAD,"&_
+"  COSTO,"&_
+"  COSTOPROMEDIO,"&_
+"  EXISTENCIA,"&_
+"  ALMACEN,"&_
+"  EXIST_ALM,"&_
+"  PRECIO_VTA,"&_
+"  POR_COSTEA,"&_
+"  USUARIO,"&_
+"  ID_ENTRADA)"&_
+"	VALUES "&_
+"(	'EN', "&_
+"	'1 ', "&_
+"	'E', "&_
+"	'"&movim&"',"&_
+"	'1',"&_
+"	'"&txtArticulo&"',"&_
+"	'"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"	'"&FORMATO (time,"00:00:00")&"',"&_
+"	'"&AJ&"',"&_
+"	"&Formato(COSTO,"###.00")&","&_
+"	"&Formato(COSTO,"###.00")&","&_
+"	'"&ER&"',"&_ 
+"	'1',"&_
+"	'"&ER&"',"&_ 
+"	"&Formato(PRECIO,"###.00")&","&_
+"	'"&AJ&"',"&_  
+"	'SUP',"&_
+"	'2')" 
+
+sqlent ="INSERT entradas"&_
+"(  Entrada,"&_
+"  OCUPADO,"&_
+"  TIPO_DOC,"&_
+"  FACTURA,"&_
+"  F_EMISION,"&_
+"  IMPORTE,"&_
+"  COSTO, "&_
+"  ALMACEN,"&_
+"  ESTADO,"&_
+"  OBSERV,"&_
+"  DATOS,"&_
+"  USUARIO,"&_
+"  USUFECHA,"&_
+"  USUHORA)"&_
+"VALUES ("&_
+"  '1',"&_
+"  '0',"&_
+"  'II',"&_
+"  'AJUSTE DE INVENTARIO CMESIT',"&_
+"  '"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"  '0',"&_
+"  '0',"&_
+"  '1',"&_
+"  'CO',"&_
+"  'AJUSTE INVENTARIO',"&_
+"  'AJUSTE DE INVENTARIO CMESIT',"&_
+"  'SUP',"&_
+"  '"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"  '"&FORMATO (time,"HH:MM:SS")&"' "
+
+
+SQLENTPART="INSERT entpart "&_
+"(  ENTRADA,"&_
+"  TIPO_DOC,"&_
+"  NO_REFEREN,"&_
+"  ARTICULO,"&_
+"  CANTIDAD,"&_
+"  PRECIO,"&_
+"  OBSERV,"&_
+"  PARTIDA,"&_
+"  ID_ENTRADA,"&_
+"  Usuario,"&_
+"  UsuFecha,"&_
+"  UsuHora,"&_
+"  PRCANTIDAD,"&_
+"  CLAVEADD)"&_ 
+"VALUES "&_
+"( '1',"&_
+"  'II',"&_
+"  '0',"&_
+"  '"&txtArticulo&"',"&_
+"  '"&AJ&"',"&_
+"  "&Formato(COSTO,"###.00")&","&_
+"  '"&UPC&"',"&_
+"  '0',"&_
+"  '"&ENTCONSEC&"',"&_
+"  'SUP',"&_
+"	'"&formato(DATE,"dd/mm/yyyy")&"',"&_
+"	'"&FORMATO(time,"HH:MM:SS")&"',"&_
+"  '0',"&_
+"  ' ')"
+
+       
+	IF RSTENT.EOF THEN
+		MSGBOX sqlent  &" " &  SQLENTPART &" "& sqlmovs 
+		Ambiente.Connection.Execute (sqlent)
+	else
+	'msgbox "algo" 
+	END IF
+
+	IF NOT RSTENTPART.EOF THEN
+	
+	Ambiente.Connection.Execute (SQLENTPART)
+	Ambiente.Connection.Execute "update consec set consec='"&ENTCONSEC&"' where dato='entpart'"
+	else
+	'msgbox "algo2" 
+	END IF
+
+
+
+Ambiente.Connection.Execute (sqlmovs)
+
+
+'Ambiente.Connection.Execute "update prods set EXISTENCIA='"&ER&"',LINEA='"&dblinea.text&"',MARCA='"&dbmarca.text&"' where articulo='"&txtArticulo&"'"
+Ambiente.Connection.Execute "update prods set EXISTENCIA='"&ER&"' where articulo='"&txtArticulo&"'"
+Ambiente.Connection.Execute "update EXISTENCIAALMACEN set EXISTENCIA='"&ER&"',ALMACEN='1' where articulo='"&txtArticulo&"'"
+Ambiente.Connection.Execute "update "&bdconteo&" set EXISTENCIA='"&ER&"',conteo='"&ER&"',Diferencia=0  where articulo='"&txtArticulo&"'"
+
+
+txtArticulo.SETFOCUS
+call fillgrid
+END SUB
+
+

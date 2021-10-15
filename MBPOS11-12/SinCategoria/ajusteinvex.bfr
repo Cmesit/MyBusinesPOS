@@ -1,0 +1,335 @@
+AJUSTEINVEX
+Importando productos desde excel
+Forma==6990==2895==3135==3510==Form1==Form1$$-$$CommandButton==1725==690==165==1620==Aceptar==&Aceptar==0$$-$$SearchFile==6555==300==125==625==Archivo====11$$-$$Label==4800==195==165==210==lblLabel0==Importar catálogo de productos y existencia desde excel==1$$-$$CommandButton==1725==690==2000==1625==Cancelar==&Cancelar==14$$-$$Label==765==195==135==1020==detalle==Detalles:==15$$-$$CommandButton==1725==690==4980==1635==cmdButton2==&Abrir archivo==16$$-$$
+Sub Form_load
+
+    Me.Caption = "Importando desde Excel(tm)"
+    Archivo.File = Ambiente.Path & "\articulos.xls"
+
+End Sub
+
+
+Sub Button_Click()   
+
+    Select Case ControlEvento.Tag 
+           Case "Aceptar"
+                
+                AplicaInventario
+                DescargaForma
+
+           Case "Cancelar" 
+
+                DescargaForma
+
+           Case "cmdButton2"
+
+                ShellRun Parent.hWnd, "Open", Archivo.File                      
+
+    End Select
+
+End Sub
+
+
+Sub AplicaInventario
+
+    Set excelConnection = CreateObject("ADODB.Connection")
+    excelConnection.ConnectionString = "driver={Microsoft Excel Driver (*.xls)};DBQ=" & Controles("Archivo").File
+    excelConnection.Open    
+
+    ImportaInventario excelConnection
+
+End Sub
+
+
+Sub ImportaInventario( excelConnection )
+    Dim rstProductos
+    Dim bolAfectaInventario    
+    Dim rstArticulo
+    Dim rstClaveAdd
+    Dim Articulos 
+    Dim Ajuste  
+    Dim rstImpuesto
+                      
+    Ambiente.Connection.Execute "UPDATE prods SET etiquetas = 0"
+
+    bolAfectaInventario = True
+    
+    Set rstProductos = CreaRecordSet( "SELECT * FROM [ARTICULOS$]", (excelConnection ) )
+    Set Query = NewQuery()    
+    Set Query.Connection = Ambiente.Connection
+
+    Set Articulos = CreateObject( "MyBArticulos.Articulos" )
+    Set Articulos.Ambiente = Ambiente                    
+
+    nEntrada = 0
+    nSalida = 0
+
+    While Not rstProductos.EOF 
+          
+          If Not clEmpty( "" & (rstProductos("Código del producto")) ) Then
+             If Not clEmpty( "" & (rstProductos("Descripción")) ) Then
+                
+                Articulos.recalculoDeInventario rstProductos("Código del producto"), Ambiente, False
+                Set rstArticulo = CreaRecordSet( "SELECT articulo, existencia FROM prods WHERE articulo = '" & rstProductos("Código del producto") & "'", Ambiente.Connection )
+                
+                Query.Reset
+
+
+                Query.strState = "UPDATE"
+                Query.Condition = "articulo = '" & rstProductos("Código del producto") & "'"
+                                                                                            
+                Query.AddField "prods","invent", 1
+                Query.CreateQuery 
+                Query.Execute                                                   
+
+				Query.Reset 
+                         
+                If Not IsNull( rstProductos("Existencia") ) Then
+
+                   Ajuste = FDec( rstProductos("Existencia") )' - Val2( rstArticulo("Existencia") )
+                   AfectandoInventario rstProductos("Código del producto"), Ajuste
+                   Articulos.recalculoDeInventario rstProductos("Código del producto"), Ambiente, False
+                      
+                   If Ajuste <> 0 Then
+                     set rstconta= CreaRecordset ("Select * from prods where articulo = '"&rstProductos("Código del producto")&"'",Ambiente.Connection)
+                      If Ajuste > 0 Then      
+                         nEntrada = CreaEntrada( nEntrada,  rstProductos("Código del producto"), Ajuste,  FDec( rstconta("Costo_u") ), rstProductos("Descripción") )
+                      Else
+                         nSalida = CreaSalida( nSalida,  rstProductos("Código del producto"), Ajuste,  FDec( rstconta("Precio1") ), rstProductos("Descripción") )
+                      End If                   
+                   End If
+
+                End If
+
+
+             End If
+          End If
+
+          Detalle.Caption = "" & rstProductos("Descripción")           
+
+          rstProductos.MoveNext
+    Wend                                                        
+
+    MyMessage "Catálogo importado"                            
+
+    If Question( "Desea imprimir etiquetas de codigo de barras", 1 ) = True Then
+  
+       Script.RunProcess "ZEBRA2844", Me, Ambiente
+  
+    End If
+
+End Sub
+
+
+Sub AfectandoInventario( strArticulo, Existencia )
+    Dim rstProd
+    Dim n
+    Dim Query
+    Dim rstInvInicial
+                
+    Set Query = NewQuery()    
+    Set Query.Connection = Ambiente.Connection
+
+    Set rstProd = CreaRecordSet( "SELECT articulo, existencia, costo_u FROM prods WHERE articulo = '" & strArticulo & "'", Ambiente.Connection )
+    n = n + 1                                   
+
+    If Existencia = 0 Then
+       Exit Sub
+    End If
+
+    Set MovInv = CreateObject( "MyBInventario.Inventario" )
+    Set MovInv.Ambiente = Ambiente
+
+    MovInv.FechaMov = Date
+    MovInv.uId = Me.Ambiente.uId
+    MovInv.EntradaSalida = "S"
+    MovInv.cMetodo = Me.Ambiente.costeo
+    MovInv.EstacionSalida = Trim(Ambiente.Estacion)
+
+    While Not rstProd.EOF 
+
+          n = n + 1
+          
+          Query.Reset
+          Query.strState = "INSERT"
+          Query.AddField "movsinv","MOVIMIENTO", 1 
+
+          If Existencia > 0 Then     
+             MovInv.EntradaSalida = "E"
+             MovInv.nMovimiento = 1
+             MovInv.TipoMovim = "EX+"
+             MovInv.NoMovim = 1
+             MovInv.TipoOperacion = "EX+"
+             MovInv.nCantidad = Existencia
+             MovInv.AfectaCosto = True
+          Else
+             MovInv.EntradaSalida = "S"
+             MovInv.nMovimiento = 1
+             MovInv.TipoMovim = "EX-"
+             MovInv.NoMovim = 1
+             MovInv.TipoOperacion = "EX-"
+             MovInv.nCantidad = Existencia * -1
+          End If                   
+
+          MovInv.nPrecio = rstProd("costo_u")
+          MovInv.nAlmacen = 1          
+          MovInv.cArticulo = strArticulo  
+          MovInv.AfectaInventario                                                        
+ 
+
+          Set rstInvInicial = CreaRecordSet( "SELECT * FROM invinicial WHERE articulo = '" & rstProd("articulo") & "'", _
+              Ambiente.Connection )
+
+          If rstInvInicial.EOF Then   
+             Query.Reset
+             Query.strState = "INSERT"
+             Query.AddField "invinicial","fecha", DateSerial( 2000, 01, 01 )
+             Query.AddField "invinicial","articulo", rstProd("articulo")
+             Query.AddField "invinicial","existencia", Existencia
+             Query.AddField "invinicial","costo", rstProd("costo_u")
+             Query.CreateQuery
+             Query.Execute
+          End If      
+
+          rstProd.MoveNext
+
+    Wend    
+
+End Sub
+
+
+Function FDec( Number )
+                 
+    FDec = Replace( "" & Number, ",", "." )
+
+End Function
+
+
+Function CreaEntrada( Entrada, Articulo, Cantidad, Costo, Descripcion )
+    Dim Query	          
+    Dim rstArticulo
+
+    Set Query = NewQuery()
+	Set Query.Connection = Ambiente.Connection
+
+    If Entrada = 0 Then
+	   Query.Reset
+       Query.strState = "INSERT"
+  
+       Entrada = TraeSiguiente( "MovEnt", Ambiente.Connection ) 
+       Query.AddField "entradas", "entrada", Entrada
+       Query.AddField "entradas", "ocupado", 1
+       Query.AddField "entradas", "f_emision", Date
+       Query.AddField "entradas", "tipo_doc", "AI+"
+       Query.AddField "entradas", "importe", 0
+       Query.AddField "entradas", "costo", 0
+       Query.AddField "entradas", "almacen", 1
+       Query.AddField "entradas", "estado", "CO"
+       Query.AddField "entradas", "observ", vbNullString
+       Query.AddField "entradas", "tipo_cam", 1
+       Query.AddField "entradas", "moneda", Ambiente.Moneda
+       Query.AddField "entradas", "datos", vbNullString
+       Query.AddField "entradas", "usuario", Ambiente.uId
+       Query.AddField "entradas", "usufecha", Date
+	   On Error Resume Next
+       Query.AddField "entradas", "usuhora", Libreria.Formato(Time, "hh:mm:ss")
+	   On Error GoTo 0
+       Query.CreateQuery
+       Query.Execute
+    End If 
+    
+    Query.Reset
+    Query.strState = "INSERT"
+    Query.AddField "entpart","ENTRADA", Entrada
+    Query.AddField "entpart","TIPO_DOC", "AI+"
+    Query.AddField "entpart","NO_REFEREN", Entrada
+    Query.AddField "entpart","ARTICULO", Articulo
+    Query.AddField "entpart","CANTIDAD", Cantidad
+    Query.AddField "entpart","PRECIO", Costo
+    Query.AddField "entpart","OBSERV", Descripcion
+    Query.AddField "entpart","PARTIDA", 0
+    Query.AddField "entpart","ID_ENTRADA", TraeSiguiente( "entpart", Ambiente.Connection )
+    Query.AddField "entpart","Usuario", Ambiente.Uid
+    Query.AddField "entpart","UsuFecha", Date
+    Query.AddField "entpart","UsuHora", Libreria.Formato( Time, "hh:mm:ss" )
+    Query.AddField "entpart","PRCANTIDAD", 0
+    Query.AddField "entpart","PRDESCRIP", ""
+    Query.AddField "entpart","CLAVEADD", ""
+    Query.CreateQuery
+    Query.Execute   
+
+    CreaEntrada = Entrada
+
+End Function
+
+
+
+Function CreaSalida( Salida, Articulo, Cantidad, Precio, Descripcion )
+    Dim Query	          
+    Dim rstArticulo
+
+    Set Query = NewQuery()
+	Set Query.Connection = Ambiente.Connection
+
+    If Salida = 0 Then
+	   Query.Reset
+       Query.strState = "INSERT"
+  
+       Salida = TraeSiguiente( "Salida", Ambiente.Connection ) 
+
+
+       Query.AddField "salidas","Salida", Salida
+       Query.AddField "salidas","ocupado", 1
+       Query.AddField "salidas","tipo_doc", "AI-"
+       Query.AddField "salidas","F_EMISION", Date
+       Query.AddField "salidas","IMPORTE", 0
+       Query.AddField "salidas","COSTO",  0
+       Query.AddField "salidas","ALMACEN", 1
+       Query.AddField "salidas","ESTADO", "CO"
+       Query.AddField "salidas","OBSERV", "Salida automática por excel"
+       Query.AddField "salidas","DATOS", ""
+       Query.AddField "salidas","USUARIO", Ambiente.Uid
+       Query.AddField "salidas","USUFECHA", Date
+       Query.AddField "salidas","USUHORA", Libreria.Formato( Time, "hh:mm:ss" ) 
+       Query.AddField "salidas","traspaso", 0
+       Query.AddField "salidas","almt", 0
+       Query.AddField "salidas","estraspaso", 0
+       Query.AddField "salidas","sucursal", ""
+       Query.AddField "salidas","esparasucursal", 0
+       Query.AddField "salidas","entsuc", 0
+       Query.AddField "salidas","folio", TraeSiguiente(Trim(Ambiente.Estacion) & "salida", Ambiente.Connection)
+       Query.AddField "salidas","estacion", Ambiente.Estacion
+       Query.CreateQuery
+       Query.Execute
+    End If 
+    
+    Query.Reset
+    Query.strState = "INSERT"
+    Query.AddField "salpart","SALIDA", Salida
+    Query.AddField "salpart","TIPO_DOC", "AI-"
+    Query.AddField "salpart","NO_REFEREN", Salida
+    Query.AddField "salpart","ARTICULO", Articulo
+    Query.AddField "salpart","CANTIDAD", Cantidad * -1
+    Query.AddField "salpart","PRECIO", Precio
+    Query.AddField "salpart","OBSERV", Descripcion
+    Query.AddField "salpart","PARTIDA", 0
+    Query.AddField "salpart","ID_SALIDA", TraeSiguiente( "salpart", Ambiente.Connection )
+    Query.AddField "salpart","Usuario", Ambiente.Uid
+    Query.AddField "salpart","UsuFecha", Date
+    Query.AddField "salpart","UsuHora", Libreria.Formato( Time, "hh:mm:ss" )
+    Query.AddField "salpart","PRCANTIDAD", 0
+    Query.AddField "salpart","PRDESCRIP", ""
+    Query.AddField "salpart","CLAVEADD", ""
+    Query.AddField "salpart","costo", 0
+    Query.CreateQuery
+    Query.Execute  
+
+    CreaSalida = Salida
+
+End Function
+
+
+
+
+
+

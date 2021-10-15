@@ -1,0 +1,474 @@
+ALTARAPIDA
+Productos XPRESS
+Forma==7830==4545==13530==2010====$$-$$DBCombo==2100==315==5250==1500==DBCombo10====3$$-$$CheckBox==3135==375==4375==3250==chkField0==Articulo con I.V.A. (F4)==13$$-$$TextBox==3045==315==2125==125==Articulo====0$$-$$CommandButton==1725==690==250==3125==cmdButton0==&Aceptar (F5)==14$$-$$Label==1710==195==120==120==lblLabel0==Código del producto==15$$-$$Label==1005==195==750==495==lblLabel1==Descripción==17$$-$$TextBox==5355==330==2125==500==txtFields1====1$$-$$Label==1365==195==360==1380==lblLabel2==Precio de venta==18$$-$$TextBox==1290==285==2125==1375==preciovta====2$$-$$CommandButton==1725==690==2375==3125==cmdButton1==&Cancelar==19$$-$$TextBox==2190==285==5250==125==txtFields3====16$$-$$Label==1350==195==375==1005==lblLabel4==Precio de costo==20$$-$$TextBox==1320==285==2125==1000==costo====21$$-$$TextBox==1290==285==2125==1750==txtprecio2====22$$-$$TextBox==1290==285==2125==2125==txtprecio3====23$$-$$TextBox==690==285==3500==1375==txtutil1====24$$-$$TextBox==690==285==3500==1750==txtutil2====25$$-$$TextBox==690==315==3500==2125==txtutil3====26$$-$$TextBox==800==285==6500==1000==txtunidad====27$$-$$DBCombo==2100==315==5250==2000==DBCombo11====28$$-$$Label==720==195==1005==1755==lblLabel9==Precio 2==29$$-$$Label==720==195==1005==2205==lblLabel5==Precio 3==30$$-$$Label==615==195==5745==1005==lblLabel6==Unidad==31$$-$$Label==480==195==4380==1515==lblLabel7==Linea==32$$-$$Label==540==195==4380==2055==lblLabel8==Marca==33$$-$$Label==60==195==255==2505==LBUPDATE==|==34$$-$$CheckBox==2235==195==3500==1000==chkcosto_u==costo c/I.V.A.==35$$-$$
+
+Dim impuestoActual
+
+    Me.Caption="Productos XPRESS by Cmesit"
+	Me.BackColor = RGB(30,144,255)
+ 
+	chkfield0.backcolor=RGB(30,144,255)
+    chkfield0.forecolor= vbwhite
+	chkfield0.font = "Futura Md BT"
+	chkfield0.Fontsize = "10"
+
+	chkcosto_u.backcolor=RGB(30,144,255)
+    chkcosto_u.forecolor= vbwhite
+	chkcosto_u.font = "Futura Md BT"
+	chkcosto_u.Fontsize = "10"
+
+	LBUPDATE.forecolor = vbwhite
+	lbllabel0.forecolor = vbwhite
+	lbllabel1.forecolor = vbwhite
+	lbllabel2.forecolor = vbwhite
+	lblLabel4.forecolor = vbwhite
+	lbllabel5.forecolor = vbwhite
+	lbllabel6.forecolor = vbwhite
+	lbllabel7.forecolor = vbwhite
+	lbllabel8.forecolor = vbwhite
+	lblLabel9.forecolor = vbwhite
+
+	LBUPDATE.font = "Futura Md BT"
+	lbllabel0.font = "Futura Md BT"
+	lbllabel1.font = "Futura Md BT"
+	lbllabel2.font = "Futura Md BT"
+	lblLabel4.font = "Futura Md BT"
+	lbllabel5.font = "Futura Md BT"
+	lbllabel6.font = "Futura Md BT"
+	lbllabel7.font = "Futura Md BT"
+	lbllabel8.font = "Futura Md BT"
+	lblLabel9.font = "Futura Md BT"
+
+    LBUPDATE.Fontsize = "10"
+	lbllabel0.Fontsize = "10"
+	lbllabel1.Fontsize = "10"
+	lbllabel2.Fontsize = "10"
+	lblLabel4.Fontsize = "10"
+	lbllabel5.Fontsize = "10"
+	lbllabel6.Fontsize = "10"
+	lbllabel7.Fontsize = "10"
+	lbllabel8.Fontsize = "10"
+	lblLabel9.Fontsize = "10"
+ 
+	chkField0.value=1
+	chkcosto_u.value=1 
+
+Sub Form_load()
+
+    Set rstLineas = CreaRecordSet("SELECT linea FROM lineas ORDER BY linea", Ambiente.Connection )
+    Set rstMarca = CreaRecordSet("SELECT Marca FROM Marcas ORDER BY marca", Ambiente.Connection )
+
+    Set DBCombo10.RowSource = rstLineas
+    DBCombo10.listfield = "Linea" 
+
+    Set DBCombo11.RowSource = rstMarca
+    DBCombo11.listfield = "Marca" 
+
+    preciovta.Tag = "N"
+    
+    Articulo.ToolTipText = "Código del artículo"
+    txtFields1.ToolTipText = "Descripción del articulo"
+    preciovta.ToolTipText = "Precio de venta"
+    cmdButton1.Cancel = 1
+
+             
+    chkField(0).Caption = "Artículo sin I.V.A. (F4)" 
+    chkcosto_u.Caption = "Costo c/IVA"  
+    Articulo.TabIndex = 0
+    txtFields1.TabIndex = 1
+	costo.tabindex=2
+    chkcosto_u.TabIndex =3  
+    txtutil1.TabIndex = 4
+    txtutil2.TabIndex = 5
+    txtutil3.TabIndex = 6
+    preciovta.TabIndex = 7
+    txtprecio2.TabIndex = 8
+    txtprecio3.TabIndex = 9
+    txtunidad.TabIndex = 10
+    dbcombo10.TabIndex = 11
+    dbcombo11.TabIndex = 12
+    cmdButton0.TabIndex = 13
+    cmdButton1.TabIndex = 14            
+
+
+    'Set rstLineas = CreaRecordSetEnCliente( "SELECT * FROM lineas ORDER BY descrip", Ambiente.Connection )
+
+    'Set linea.RowSource = rstLineas    
+    'linea.ListField = "linea"
+
+	Set rstImpuesto = CreaRecordSet("SELECT valor FROM impuestos WHERE impuesto = 'IVA'", Ambiente.Connection)
+	impuestoActual = rstImpuesto("valor")/100                                                   
+    
+
+
+    cmdButton1.Cancel = True
+
+End Sub       
+
+
+Function FDecimal(dValor)
+	FDecimal = Replace(dValor, ",", ".")
+End Function
+
+
+Sub Form_KeyDown()
+         
+    ' Cuando presionamos la tecla F5
+    if KeyCodeForm = 116 Then
+       GuardaDatos       
+       LimpiaCampos
+       Controles("articulo").SetFocus 'Colocamos foco en artículo
+    end if
+
+    if KeyCodeForm = 115 Then
+       if Controles("chkField0").Value = 1 Then
+          Controles("chkField0").Value = 0
+       else
+          Controles("chkField0").Value = 1         
+       end if                    
+    end if
+
+End Sub
+
+
+Sub Button_Click
+
+    Select Case ControlEvento.Tag
+           Case "cmdButton0"
+                GuardaDatos
+                LimpiaCampos
+                Controles("articulo").SetFocus
+           Case "cmdButton1" 
+                DescargaForma
+           Case "cmdButton2"
+                If Controles("txtfields3") <> "MODIFICACION" then
+                   MsgBox "El Artículo inidicado no existe."
+                   Controles("Articulo").SetFocus
+                   Exit Sub
+                Else 
+                   If MsgBox("¿Está seguro de querer borrar el registro?", VbQuestion + VbYesNo + VbDefault2, "Eliminación de articulo") = VbYes Then
+                      Ambiente.Connection.Execute "DELETE FROM prods WHERE articulo = '" & Trim(Controles("articulo").text) & "'"
+                      LimpiaCampos
+                      Controles("articulo").SetFocus
+                   End if
+                End if
+    End Select 
+
+End Sub
+
+Sub Text_LostFocus()
+'=============================================
+    If ControlEvento.Tag = "Articulo" Then
+
+		set RSTCU  = CreaRecordSet( "select * from partcomp where usufecha=(select max(usufecha) from partcomp where  articulo= '"&articulo&"')and articulo ='"&articulo&"'",Ambiente.Connection) 
+
+		Set rstProds = Rst ("SELECT * FROM prods WHERE articulo = '" & Controles("Articulo").Text &"'", Ambiente.Connection)
+if not rstcu.eof then
+		CU=VAL2(RSTCU(5))*(1-val2(RSTCU(6))/100)*(1 + impuestoActual)
+		LBUPDATE.CAPTION="C.U.C "&RSTCU("PRECIO")&" DESC. "&RSTCU("DESCUENTO")&"% C.U." & formato(CU,ambiente.Fdinero)& " " & RSTCU("USUFECHA")& " EXT. "& rstProds("EXISTENCIA") 
+else 
+        LBUPDATE.CAPTION=""
+end if 
+'		MSGBOX RSTCU("PRECIO")&" "&RSTCU("DESCUENTO")
+
+       If rstProds.EOF Then    
+          txtfields1 = ""
+          preciovta = ""    
+          txtfields3 = "ALTA"
+          txtunidad="PZA"
+          costo = ""
+		  txtprecio2=""
+		  txtprecio3=""
+		  txtutil1=""
+		  txtutil2=""
+		  txtutil3=""
+		  dbcombo10=""
+		  dbcombo11=""		
+          'linea = ""           
+
+          txtfields1.Enabled = True
+          preciovta.Enabled = True
+          costo.Enabled = True
+          'linea.Enabled = True
+          cmdButton0.Enabled = True
+
+       Else
+                            
+           Set rstUsuario = CreaRecordSet( _
+           "SELECT * FROM usuarios WHERE usuario = '" & Ambiente.Uid & "'", _
+           Ambiente.Connection )
+
+           If Not rstUsuario.EOF Then
+              If rstUsuario("supervisor") = 0 Then
+                 preciovta.Enabled = False
+                 costo.Enabled = False
+                 'linea.Enabled = False
+                 cmdButton0.Enabled = False
+                 chkField0.Enabled = False
+                 cmdKeyBoard.Enabled = False
+                 txtFields3.Enabled = False           
+              End If
+           End If                                     
+
+           if Trim(rstProds("impuesto")) = "SYS" Then                     
+              Controles("preciovta").Text = Trim(rstProds("precio1"))
+			  Controles("txtprecio2").Text = Trim(rstProds("precio2"))  
+              Controles("txtprecio3").Text = Trim(rstProds("precio3")) 
+              Controles("chkField0").Value = 0  
+              Controles("chkcosto_u").Value = 0 
+           else                               				
+              Controles("preciovta").Text = Libreria.Formato(rstProds("precio1") * (1 + impuestoActual), Ambiente.FDinero )  
+			  Controles("txtprecio2").Text = Libreria.Formato(rstProds("precio2") * (1 + impuestoActual), Ambiente.FDinero ) 
+              Controles("txtprecio3").Text = Libreria.Formato(rstProds("precio3") * (1 + impuestoActual), Ambiente.FDinero )
+              Controles("chkField0").Value = 1   
+              Controles("chkcosto_u").Value = 1                
+   end if  
+  
+           Controles("txtfields3").Text = "MODIFICACION"
+			articulo.text=rstProds("articulo")
+           Controles("txtfields1").Text = Trim(rstProds("descrip"))
+           costo = Libreria.Formato( val2(rstProds( "costo_u" ))* (1 + impuestoActual), "##,##0.00" )
+           'linea = rstProds( "linea" )
+           txtutil1.text=rstProds("u1")
+           txtutil2.text=rstProds("u2")
+           txtutil3.text=rstProds("u3")
+           txtunidad.text=rstProds("unidad")
+           dbcombo10.text=rstProds("linea")
+           dbcombo11.text=rstProds("marca")
+       End If
+
+
+    End If
+
+		    if ControlEvento.Tag = "txtutil1" Then
+				if chkcosto_u.value = 0 then
+					vl0=val2(costo)
+					vl1= (val2(txtutil1)/100+1)
+					preciovta.text=(vl0* vl1)*(1+impuestoActual)
+                else
+					vl0=val2(costo)/ (1+impuestoActual)
+					vl1= (val2(txtutil1)/100+1)
+					preciovta.text=(vl0* vl1)*(1+impuestoActual)
+
+                end if
+		    end if 
+
+		    if ControlEvento.Tag = "txtutil2" Then
+				if chkcosto_u.value = 0 then
+					vl0=val2(costo)
+					vl1= (val2(txtutil2)/100+1)
+					txtprecio2.text=(vl0* vl1)*(1+impuestoActual)
+                else
+					vl0=val2(costo)/ (1+impuestoActual)
+					vl1= (val2(txtutil2)/100+1)
+					txtprecio2.text=(vl0* vl1)*(1+impuestoActual)
+
+                end if
+		    end if 
+
+		    if ControlEvento.Tag = "txtutil3" Then
+				if chkcosto_u.value = 0 then
+					vl0=val2(costo)
+					vl1= (val2(txtutil3)/100+1)
+					txtprecio3.text=(vl0* vl1)*(1+impuestoActual)
+                else
+					vl0=val2(costo)/ (1+impuestoActual)
+					vl1= (val2(txtutil3)/100+1)
+					txtprecio3.text=(vl0* vl1)*(1+impuestoActual)
+
+                end if
+		    end if
+
+'========================================
+End Sub
+
+Sub Text_KeyDown()
+    Dim rstProds
+
+    if ControlEvento.Tag = "Articulo" Then
+       If KeyCode = 40 Then
+          Set Busqueda = CreateObject ("MyBBusquedaArticulos.BusquedaArticulos")
+          Set Busqueda.Ambiente = Ambiente
+          Set Busqueda.Control = articulo
+          Busqueda.MuestraForma
+          Set Busqueda = Nothing
+          articulo.SetFocus
+          Exit Sub
+       End if
+    end if
+
+   'Utilice un campo de texto el cual va guardar el modo general de la forma txtfields3
+    If KeyCode = 13 Then
+       If ControlEvento.Tag = "preciovta" Then
+          Eventos
+          Controles("cmdButton0").SetFocus
+       End If
+    End If
+End Sub
+
+
+Sub GuardaDatos()
+    Dim rstPR
+    Dim Modo
+    Dim Query
+
+IF TXTUTIL1.TEXT="" THEN
+TXTUTIL1.TEXT="0"
+END IF
+
+IF TXTUTIL2.TEXT="" THEN
+TXTUTIL2.TEXT="0"
+END IF 
+
+IF TXTUTIL3.TEXT="" THEN
+TXTUTIL3.TEXT="0"
+END IF
+
+    Modo = Controles("txtfields3").Text
+
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+    if Controles("chkField0").Value = 1 Then
+       nPrecio = Val2(Controles("preciovta").Text) / (1 + impuestoActual)
+    else                                                 
+       nPrecio = Val2(Controles("preciovta").Text) 
+    end if       
+
+    if Controles("chkcosto_u").Value = 1 Then
+       nCosto = Val2(Controles("costo").Text) 
+    else                                                 
+       nCosto = Val2(Controles("costo").Text)* (1 + impuestoActual) 
+    end if   
+
+    SalvaHistCamb Trim(Controles("articulo").Text), _
+                  (nPrecio), _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, (Ambiente)
+
+    If Modo = "ALTA" then
+       Query.StrState = "INSERT"
+       Query.addfield "prods", "articulo", Trim(Controles("articulo").Text)
+    Elseif Modo = "MODIFICACION" Then
+       Query.strState = "UPDATE"
+       Query.Condition = " articulo = '" & Trim(Controles("articulo").Text) & "'"
+    End if    
+
+    Query.addfield "prods", "descrip", Trim(Controles("txtfields1").Text)
+    Query.addfield "prods", "unidad", Trim(Controles("txtunidad").Text)
+
+ 
+    if Controles("chkField0").Value = 1 Then
+       Query.addfield "prods", "precio1", Val2(Controles("preciovta").Text) / (1 + impuestoActual)
+       Query.addfield "prods", "precio2", Val2(Controles("txtprecio2").Text) / (1 + impuestoActual)
+       Query.addfield "prods", "precio3", Val2(Controles("txtprecio3").Text) / (1 + impuestoActual)  
+       Query.addfield "prods", "impuesto", "IVA"
+       Query.addfield "prods", "costo_u", Val2( nCosto )/ (1 + impuestoActual)
+    else                                                 
+       Query.addfield "prods", "precio1", Val2(Controles("preciovta").Text) 
+       Query.addfield "prods", "precio2", Val2(Controles("txtprecio2").Text) 
+       Query.addfield "prods", "precio3", Val2(Controles("txtprecio3").Text)
+       Query.addfield "prods", "impuesto", "SYS" 
+       Query.addfield "prods", "costo_u", Val2( nCosto )
+    end if
+       Query.addfield "prods", "linea", DBCombo10.Text
+       Query.addfield "prods", "marca", DBCombo11.Text                
+       Query.addfield "prods", "u1", txtutil1.text
+       Query.addfield "prods", "u2", txtutil2.text
+       Query.addfield "prods", "u3", txtutil3.text
+
+    If Modo = "ALTA" Then
+
+       Query.addfield "prods", "paraventa", 1
+       Query.addfield "prods", "invent", 1
+    End If
+
+    Query.CreateQuery
+    Query.Execute
+
+    If Modo = "ALTA" Then
+       SalvaHistCamb Trim(Controles("articulo").Text), _
+                  (nPrecio), _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, _
+                  0, (Ambiente)
+    End If
+
+    Set rstPR = CreaRecordSet( "SELECT * FROM sucursal", Ambiente.Connection )
+
+    While Not rstPR.EOF
+          Query.Reset
+          Query.AddField "sucursaltareas","id", TraeSiguiente("SUCURSALTAREAS", Ambiente.Connection )
+          Query.AddField "sucursaltareas","sucursal", rstPR("Sucursal") 
+          Query.AddField "sucursaltareas","tarea", "ARTICULO"
+          Query.AddField "sucursaltareas","articulo", Trim(articulo.Text)
+          Query.strState = "INSERT"
+          Query.CreateQuery
+          Query.Execute 
+          rstPR.MoveNext        
+          Eventos
+    Wend
+           
+End Sub
+
+Sub LimpiaCampos
+    articulo = ""
+    txtfields1 = ""
+    preciovta = ""    
+    txtfields3 = "ALTA"
+    costo = ""
+	txtprecio2 =""
+	txtprecio3=""
+	txtutil1 =""
+	txtutil2 =""
+	txtutil3 =""
+	txtunidad=""
+	dbcombo10.text =""
+	dbcombo11.text =""
+	LBUPDATE.CAPTION=""
+	CHKCOSTO_U.VALUE=1
+	CHKFIELD0.VALUE=1
+End Sub
+
+
+Sub Check_Click()
+ 
+'    If ControlEvento.Value Then
+'       ControlEvento.Caption = "Producto con I.V.A. (F4)"
+'    Else  
+'       ControlEvento.Caption = "Artículo sin I.V.A. (F4)"
+'    End If
+
+
+	Select Case ControlEvento.Tag
+           Case "chkField0" 
+    If chkField0.Value Then
+       chkField0.Caption = "Producto con I.V.A. (F4)"
+    Else  
+       chkField0.Caption = "Artículo sin I.V.A. (F4)"
+    End If
+		   Case "chkcosto_u"
+    If chkcosto_u.Value Then
+       chkcosto_u.Caption = "Costo c/IVA"
+    Else  
+       chkcosto_u.Caption = "Costo s/IVA"
+    End If	
+
+End Select 
+
+
+End Sub
+

@@ -1,0 +1,111 @@
+REMISONATICKET
+CONVIETE REMISON DE PRESTAMO A TICKET PAGADO
+Forma==5400==3870==-73125==3045====$$-$$OptionButton==2565==250==125==1000==optefectivo==Efectivo==4$$-$$TextBox==2595==285==125==500==txtventa====2$$-$$CommandButton==1725==690==3125==1000==cmdcobrar==COBRAR==0$$-$$Label==2325==195==120==120==lblremison==No de Cotizacion/Remision==1$$-$$OptionButton==2520==250==125==1500==opttarjeta==Tarjeta==14$$-$$TextBox==1395==345==125==2750==txttarjeta====15$$-$$Label==1245==195==120==2370==lblLabel1==No. de Tarjeta==16$$-$$OptionButton==2565==250==125==2000==opttra==Tranferencia==17$$-$$
+Dim tpago,ENTCONSEC,rstventa,rstconsec,varsql
+me.caption="CONVERTIR REMISON TICKET"
+optefectivo.value=true
+
+
+Sub Button_Click()
+if  isNumeric(txtventa) = false then 
+msgbox"Inserta un numero de Cotizacion Valida"
+exit sub
+end if
+
+SET rstventa=crearecordset("select * from ventas where venta='"&txtventa&"' and tipo_doc='REM' and estado='CO' and Ticket=0 ",Ambiente.Connection)
+SET rstconsec=crearecordset("select * from consec where dato='BTicket'",Ambiente.Connection)
+SET rstflujo=crearecordset("select max(venta) from flujo",Ambiente.Connection)
+
+if not rstventa.eof then 
+
+remision=rstventa("no_referen")
+ENTCONSEC=val2(rstconsec("consec"))+1 
+IMPFLUJO=VAL2(rstventa("IMPORTE"))+VAL2(rstventa("IMPUESTO"))
+
+Ambiente.Connection.Execute "update consec set consec='"&ENTCONSEC&"' where dato='BTicket'"
+Ambiente.Connection.Execute "update ventas set F_EMISION ='"&formato(date,"DD/MM/YYYY")&"',no_referen='"&ENTCONSEC&"',concepto2='"&tpago&"', ticket='1',ventaref='"&rstventa("No_referen")&"' "&varsql&"  where venta='"&txtventa&"' "
+
+   If optefectivo.value=true Then
+SQLFLUJO="INSERT flujo"&_
+           "(ABONO"&_
+           ",CONCEPTO"&_
+           ",ING_EG"&_
+           ",IMPORTE"&_
+           ",FECHA"&_
+           ",HORA"&_
+           ",MONEDA"&_
+           ",ESTACION"&_
+           ",USUARIO"&_
+           ",USUFECHA"&_
+           ",USUHORA"&_
+           ",Modulo"&_
+           ",Venta"&_
+           ",Corte"&_
+           ",cierretienda"&_
+           ",tipo_cam"&_
+           ",Cargo"&_
+           ",concepto2)"&_
+     "VALUES"&_
+           "('0'"&_
+           ",'CLIEN'"&_
+           ",'I'"&_
+           ",'"&IMPFLUJO&"'"&_
+           ",'"&formato(DATE,"dd/mm/yyyy")&"'"&_
+           ",'"&FORMATO (time,"00:00:00")&"'"&_
+           ",'MN'"&_
+           ",'"&Ambiente.estacion&"'"&_
+           ",'SUP'"&_
+           ",'"&formato(DATE,"dd/mm/yyyy")&"'"&_
+           ",'"&FORMATO (time,"00:00:00")&"'"&_
+           ",'CXC'"&_
+           ",'"&RSTVENTA("VENTA")&"'"&_
+           ",'0'"&_
+           ",'0'"&_
+           ",'1'"&_
+           ",'0'"&_
+           ",'"&tpago&"')"
+	Ambiente.Connection.Execute (SQLFLUJO)
+    End If 
+
+MSGBOX "LA REMISON SE CONVITIO CON EXITO EN TICKET NO:"&ENTCONSEC
+ Script.RunForm "RETICKET", Parent, Ambiente,, False
+else
+
+msgbox "NO SE ENCONTRO LA REMISON"
+end if
+
+END SUB  
+
+Sub Option_Click()
+'----**** MyBusiness POS Generated  
+'----**** Date:  13-02-2007
+'----**** Time:  18:44:02
+'----**** User:  SUP
+    If ControlEvento.Tag = "optefectivo" Then
+	     varsql=""
+	     tpago="EFE"
+'	     msgbox "presiono efectivo"
+    End If 
+
+    If ControlEvento.Tag = "opttra" Then
+	     varsql=""
+	     tpago="TRA"
+'	     msgbox "presiono efectivo"
+    End If
+
+
+    If ControlEvento.Tag = "opttarjeta" Then
+		if  isNumeric(txttarjeta) = false then 
+		msgbox"Inserta un numero de tarjeta Valido"
+        optefectivo.value=true
+        txttarjeta.text=""
+		exit sub
+		end if
+
+'	    msgbox "presiono Tarjeta"
+		tpago="TAR"
+	    varsql=",numerocheque='"&txttarjeta&"'  "
+    End If 
+
+
+End sub

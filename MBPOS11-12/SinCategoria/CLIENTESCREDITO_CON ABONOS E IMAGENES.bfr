@@ -1,0 +1,687 @@
+CLIENTESCREDITO
+
+Forma==14625==10395==-73125==3045====$$-$$ListView==5000==3500==250==6125==lvlListpagos====7$$-$$Grid==13860==4125==250==1750==Grid====5$$-$$TextBox==2000==345==375==500==txtcliente====2$$-$$CommandButton==1575==375==8250==500==cmdBuscacli==Buscar==0$$-$$Label==795==195==375==255==lblLabel0==CLIENTE==1$$-$$TextBox==5000==345==2875==500==txtnombre====14$$-$$TextBox==2000==345==375==1250==txtventa====15$$-$$CommandButton==1575==375==2875==1250==cmdBuscaVen==Buscar==16$$-$$ListView==5000==3500==5500==6125==lvlListticket====17$$-$$CommandButton==1575==375==8250==1000==cmdrefresh==Recargar==18$$-$$Label==810==195==2880==255==lblLabel1==NOMBRE==19$$-$$Label==960==195==375==1005==lblLabel2==NO VENTA==20$$-$$WebBrowser==2505==3500==10625==6125==WebBrowser====21$$-$$CommandButton==1020==625==13250==7125==cmdButton3==Abono a Cuenta==22$$-$$CommandButton==990==750==13250==6250==cmdButton4==Venta Individual==23$$-$$CommandButton==1905==375==12125==750==cmdButton5==Imprime Cuenta==24$$-$$CommandButton==1950==375==12125==250==cmdButton6==Imprime pagos==25$$-$$
+dim buscarval ,Url_Imagen
+buscarval=0    
+Url_Imagen="c:\mkc\logo.jpg"
+llena_imagen
+
+Sub Form_Load()
+'----**** MyBusiness POS Generated  
+'----**** Date:  16-09-2007
+'----**** Time:  08:54:47
+'----**** User:  SUP
+    Dim s 
+me.backcolor=rgb(224,224,224) 
+
+call Grid_Fill()
+
+
+	lvlListpagos.ColumnHeaders.Add ,,"Venta"
+	lvlListpagos.ColumnHeaders.Add ,,"Fecha"
+	lvlListpagos.ColumnHeaders.Add ,,"Importe" 
+	lvlListpagos.ColumnHeaders(1).Width	= lvlListpagos.Width * 0.30
+	lvlListpagos.ColumnHeaders(2).Width	= lvlListpagos.Width * 0.40
+	lvlListpagos.ColumnHeaders(3).Width	= lvlListpagos.Width * 0.30     
+
+	lvlListticket.ColumnHeaders.Add ,,"Venta"
+	lvlListticket.ColumnHeaders.Add ,,"CANT"
+	lvlListticket.ColumnHeaders.Add ,,"Clave"
+	lvlListticket.ColumnHeaders.Add ,,"Producto"
+	lvlListticket.ColumnHeaders.Add ,,"Importe"  
+	lvlListticket.ColumnHeaders(1).Width	= 0
+	lvlListticket.ColumnHeaders(2).Width	= lvlListpagos.Width * 0.12
+	lvlListticket.ColumnHeaders(3).Width	= lvlListpagos.Width * 0.18  
+	lvlListticket.ColumnHeaders(4).Width	= lvlListpagos.Width * 0.50
+	lvlListticket.ColumnHeaders(5).Width	= lvlListpagos.Width * 0.20                                
+
+
+End Sub
+ 
+
+Sub Grid_Fill()
+    
+    Grid.Clear True
+    Grid.AddColumn ,"Clave"              , 0   ,,  70
+    Grid.AddColumn ,"Cliente"            , 0   ,,  200 
+    Grid.AddColumn ,"Cuenta"           , 0   ,,  70
+    Grid.AddColumn ,"Fecha"              , 0   ,,  100
+    Grid.AddColumn ,"Monto"              , 0   ,,  100
+    Grid.AddColumn ,"Abonado"              , 0   ,,  100 
+    Grid.AddColumn ,"Resta"              , 0   ,,  100 
+    Grid.AddColumn ,"D/D/C"              , 0   ,,  60 
+    Grid.AddColumn ,"Vendedor"              , 0   ,,  100 
+
+if buscarval=0 then
+       Set rstventas = CreaRecordSet( "SELECT ventas.venta, ventas.f_emision, ventas.importe, ventas.impuesto, ventas.no_referen, ventas.cliente, clients.nombre,DATEDIFF(day,ventas.f_emision,GETDATE()) as diasc, ventas.vend "&_
+										" FROM ventas INNER JOIN clients ON ventas.cliente = clients.cliente"&_
+										" WHERE ventas.tipo_doc = 'PE' and ventas.cliente <> 'O' and ventas.importe > 0 ORDER BY venta DESC", Ambiente.Connection )
+end if
+
+if buscarval=1 then
+msgbox "1" 
+      Set rstventas = CreaRecordSet( "SELECT ventas.venta, ventas.f_emision, ventas.importe, ventas.impuesto, ventas.no_referen, ventas.cliente, clients.nombre,DATEDIFF(day,ventas.f_emision,GETDATE()) as diasc, ventas.vend"&_
+										" FROM ventas INNER JOIN clients ON ventas.cliente = clients.cliente"&_
+										" WHERE ventas.tipo_doc = 'PE' and ventas.cliente <> 'O' and ventas.importe > 0 and ventas.cliente='"&txtcliente&"' ORDER BY venta DESC", Ambiente.Connection )
+
+end if
+
+if buscarval=2 then
+       Set rstventas = CreaRecordSet( "SELECT ventas.venta, ventas.f_emision, ventas.importe, ventas.impuesto, ventas.no_referen, ventas.cliente, clients.nombre,DATEDIFF(day,ventas.f_emision,GETDATE()) as diasc, ventas.vend"&_
+										" FROM ventas INNER JOIN clients ON ventas.cliente = clients.cliente"&_
+										" WHERE ventas.tipo_doc = 'PE' and ventas.cliente <> 'O' and ventas.importe > 0 and venta='"&txtventa&"' ORDER BY venta DESC", Ambiente.Connection )
+end if
+
+
+
+
+    While Not rstventas.EOF 
+ 
+	Set rstabonos = CreaRecordSet ("Select sum(importe) As ABONOS from flujo where venta="&rstventas("venta")&" ",Ambiente.Connection)
+    set rstvend = CreaRecordset ("Select nombre from vends where vend='"&rstventas("vend")&"'",Ambiente.connection)
+          Grid.AddRow           
+
+          If bolColor Then
+             intColor = rgb(224,255,255)
+             bolColor = False
+          Else
+             intColor = rgb(204,229,255)
+             bolColor = True
+          End If                      
+
+
+          Grid.CellDetails Grid.Rows, 01, rstventas("cliente"), 0
+          Grid.Cell( Grid.Rows, 01 ).BackColor = intColor  
+
+          Grid.CellDetails Grid.Rows, 02, rstventas("nombre"), 0
+          Grid.Cell( Grid.Rows, 02 ).BackColor = intColor        
+
+          Grid.CellDetails Grid.Rows, 03, rstventas("venta"), 0
+          Grid.Cell( Grid.Rows, 03 ).BackColor = intColor     
+
+          Grid.CellDetails Grid.Rows, 04, rstventas("f_emision"), 0
+          Grid.Cell( Grid.Rows, 04 ).BackColor = intColor 
+
+          Grid.CellDetails Grid.Rows, 05,  formato ((rstventas("importe")+ rstventas("impuesto")),"$ ###,###.00"),0  
+          Grid.Cell( Grid.Rows, 05 ).BackColor = intColor
+
+           Grid.CellDetails Grid.Rows, 06, formato (rstabonos("ABONOS"),"$ ###,###.00"),0  
+          Grid.Cell( Grid.Rows, 06 ).BackColor = intColor 
+
+           Grid.CellDetails Grid.Rows, 07, formato ((rstventas("importe")+ rstventas("impuesto")- rstabonos("ABONOS")),"$ ###,###.00"),0
+          Grid.Cell( Grid.Rows, 07 ).BackColor = intColor 
+
+           Grid.CellDetails Grid.Rows, 08, rstventas("diasc") ,0
+          If rstventas("diasc")>60  Then
+             intColor = RGB (255,127,80)
+          End If 
+          Grid.Cell( Grid.Rows, 08 ).BackColor = intColor 
+
+          Grid.CellDetails Grid.Rows, 09,""'rstvend("Nombre"),0
+          Grid.Cell( Grid.Rows, 09 ).BackColor = intColor 
+
+
+          rstventas.MoveNext
+    Wend
+
+buscarval=0
+End Sub  
+
+Sub Grid_SelecctionChange()
+Dim venta
+venta=Grid.Cell( Grid.SelectedRow, 3 ).Text
+  
+call llena_pagos(venta)
+call llena_ticket(venta)
+End Sub   
+
+Sub llena_pagos(venta)
+	lvlListpagos.ListItems.Clear
+
+set rstpagospar = crearecordset("Select venta,importe,fecha from flujo where venta ='"&venta&"'" ,Ambiente.connection)
+intcolor=0   
+
+while not rstpagospar.eof 
+if intcolor=0 then
+
+colorf=vbblue
+
+end if
+
+if intcolor=1 then
+
+colorf=vbblack
+
+end if
+		Set Item = lvlListpagos.ListItems.Add(,,rstpagospar("venta"))
+
+		Item.ListSubItems.Add ,, rstpagospar("fecha")
+		Item.ListSubItems.Add ,, formato(rstpagospar("importe"),"$###,###.00") 
+		item.ListSubItems(1).ForeColor = colorf
+		item.ListSubItems(2).ForeColor = colorf
+
+rstpagospar.movenext 
+if intcolor = 0 then
+intcolor=1
+else
+intcolor =0
+end if
+wend
+
+end sub
+
+Sub llena_ticket(venta)
+
+	lvlListticket.ListItems.Clear
+
+set rstprodsticket = crearecordset("Select venta,cantidad,precio,articulo,observ from partvta where venta ='"&venta&"'" ,Ambiente.connection)
+intcolor=0
+while not rstprodsticket.eof 
+
+if intcolor=0 then
+
+colorf=vbblue
+
+end if
+
+if intcolor=1 then
+
+colorf=vbblack
+
+end if
+
+		Set Item = lvlListticket.ListItems.Add(,,rstprodsticket("venta"))
+        Item.forecolor = VBred  
+		Item.ListSubItems.Add ,, rstprodsticket("cantidad")
+		Item.ListSubItems.Add ,, rstprodsticket("articulo")
+		Item.ListSubItems.Add ,, rstprodsticket("observ")
+		Item.ListSubItems.Add ,, Formato((rstprodsticket("precio")*1.16),"$###,###.00") 
+		item.ListSubItems(1).ForeColor = colorf
+		item.ListSubItems(2).ForeColor = colorf
+		item.ListSubItems(3).ForeColor = colorf
+		item.ListSubItems(4).ForeColor = colorf   
+if intcolor = 0 then
+intcolor=1
+else
+intcolor =0
+end if
+
+rstprodsticket.movenext
+wend
+
+end sub 
+
+Sub Text_KeyUp()
+'----**** MyBusiness POS Generated  
+'----**** Date:  22-07-2008
+'----**** Time:  09:47:14
+'----**** User:  SUP
+  
+    If KeyCode = 40 Then
+       Select Case ControlEvento.Tag
+              Case "txtcliente"
+
+                   SetSessionValue Ambiente, "BUSCAR_CLIENTE", txtcliente.Text
+                   Script.RunForm "BUSQUEDACLIENTES2", Me, Ambiente,, True
+                   txtcliente = "" & GetSessionValue( Ambiente, "BUSCAR_CLIENTE" )
+		end select
+end if 
+               
+end sub   
+
+Sub Text_LostFocus()
+'----**** MyBusiness POS Generated  
+'----**** Date:  22-07-2008
+'----**** Time:  09:58:54
+'----**** User:  SUP
+on error resume next
+    Select Case ControlEvento.Tag
+           Case "txtcliente"
+                Call llamaDatosDelCliente() 
+				cmdBuscacli.setfocus
+    End Select 
+ 
+
+end sub
+
+Sub llamaDatosDelCliente()
+
+   Set rstCliente = CreaRecordSet( _
+    "SELECT * FROM clients WHERE cliente = '" & txtcliente & "'", _
+    Ambiente.Connection )
+
+    If Not rstCliente.EOF Then
+       txtNombre = rstCliente( "nombre" )
+	end if
+
+end sub
+
+Sub Button_Click()
+    
+    Select Case ControlEvento.Tag
+           Case "cmdBuscacli"
+			buscarval=1
+             call  Grid_Fill()
+
+           Case "cmdBuscaVen"
+             buscarval=2
+             call  Grid_Fill()  
+           Case "cmdrefresh"
+			 txtcliente=""
+			 txtnombre=""
+			 txtventa=""
+             buscarval=0
+             call  Grid_Fill() 
+
+           Case "cmdButton6"
+				imprime_pagos  
+
+           Case "cmdButton5"
+				imprimir_vp  
+
+    End Select
+
+End Sub    
+                           
+
+sub ListView_click
+
+      Dim blnFoundFirstItem 
+      blnFoundFirstItem = False
+      Dim i
+ 
+select case controlevento.tag   
+
+
+
+case  "lvlListpagos" 
+exit sub
+  If lvlListpagos.ListItems.Count > 0 Then
+
+      ' Find out which items are selected.
+      For i = 1 To lvlListpagos.ListItems.Count
+        If (lvlListpagos.ListItems(i).Selected) Then
+            ' Assign the Text of the 'first' selected item to Textbox1.Text.
+            If (Not blnFoundFirstItem) Then
+               msgbox lvlListpagos.ListItems(i).SubItems(2)
+                blnFoundFirstItem = True
+            ' Assign the Text of the 'second' selected item to Textbox2.Text.
+            Else
+                msgbox = lvlListpagos.ListItems(i).SubItems(2)
+            End If
+        End If
+      Next 
+  Else
+    MsgBox "Esta cuenta no contiene pagos"
+  End If  
+
+
+case  "lvlListticket"  
+  If lvlListticket.ListItems.Count > 0 Then
+
+      ' Find out which items are selected.
+      For i = 1 To lvlListticket.ListItems.Count
+        If (lvlListticket.ListItems(i).Selected) Then
+            ' Assign the Text of the 'first' selected item to Textbox1.Text.
+            If (Not blnFoundFirstItem) Then 
+				set rstprodinfo = CreaRecordset ("Select imagen from Prods where Articulo='"&lvlListticket.ListItems(i).SubItems(2)&"'",Ambiente.Connection)
+				
+				    Url_Imagen = rstprodinfo("imagen")
+					llena_imagen
+                blnFoundFirstItem = True
+            ' Assign the Text of the 'second' selected item to Textbox2.Text.
+            Else
+                msgbox = lvlListticket.ListItems(i).SubItems(2)
+            End If
+        End If
+      Next 
+  Else
+    MsgBox "Esta cuenta no contiene productos"
+  End If  
+
+end select
+
+End sub  
+
+sub llena_imagen
+
+Ancho_WebBrowser = "60%"
+Alto_WebBrowser = "auto"
+'Escribimos la etiqueta img en la variable
+str_Html = str_Html & "<body align=""center"" scroll="& Chr(34) &"no"& Chr(34) &"><img src="  & Chr(34) & Url_Imagen & Chr(34)
+
+'Posicion de la imagen
+str_Html = str_Html & " style=""left: 0px; TOP: POSITION: absolute;"
+
+'Ponemos el tamaño de la imagen igual al del webbrowser
+str_Html = str_Html & " WIDTH: "&Ancho_WebBrowser&"; height:"& Chr(34) &Alto_WebBrowser& Chr(34) &""" ></body>"
+
+'Cerramos la etiqueta body
+str_Html = str_Html & ""
+
+'Escribimos la cadena anterior con el método Write del objeto Ducument
+
+WebBrowser.Navigate "about:"&str_Html
+
+
+end sub
+            
+sub Imprime_pagos()
+
+    If Grid.SelectedRow <= 0 Then
+		mymessage "Seleciona una cuenta"
+       Exit Sub
+    End If
+
+	set rstvta = CreaRecordset("Select *,DATEDIFF(day,ventas.f_emision,GETDATE()) as diasc, DATEDIFF(day,ventas.usufecha,GETDATE()) as diast from ventas where venta = '"&Grid.Cell( Grid.SelectedRow, 3 ).Text&"' and tipo_doc = 'PE' ",Ambiente.connection)     
+
+ 
+	if not rstvta.eof then
+		set rstcli = CreaRecordset("Select * from clients where cliente = '"&rstvta("cliente")&"' ",Ambiente.Connection)
+		set rstpagos = CreaRecordset ("Select * from flujo where venta ='"&rstvta("venta")&"'",Ambiente.Connection)
+		    LN = Chr(13) & Chr(10) 
+			s="" 
+		s=s&""&LN 
+		s=s&"  HISTORIAL DE PAGO DE: "&LN 
+		s=s&""&rstcli("nombre")&LN
+		s=s&" Fechace de consulta:  "&formato(date,"dd-mm-yyyy")&LN
+		s=s&" De la cuenta: "&rstvta("comodin3")&"    con verificador: "&rstvta("venta")&LN	
+		s=s&""&LN 
+		s=s&"     MONTO        TIPO-PAGO     FECHA"&LN
+while not rstpagos.eof 
+		s=s&"    $"&rstpagos("importe")&"             "&rstpagos("concepto2")&"       "&rstpagos("fecha")&LN 
+
+rstpagos.movenext
+wend
+		s=s&""&LN 
+		s=s&"Su apartado tiene "&rstvta("diasc")&" días sin movimiento"&LN 
+		s=s&"Su apartado tiene "&rstvta("diast")&" días desde su inicio"&LN 
+		s=s&""&LN 
+		s=s&""&LN
+
+       Script.sendToPrinter Ambiente, (s), prn.Pantalla 
+		
+mymessage ""&s		  
+		
+	end if
+
+End sub
+
+
+Sub imprimir_vp()
+
+
+    ' Creamos el recordSet del encabezado de la venta
+    Set rstEncabezado = Rst("SELECT * FROM ventas WHERE venta = " & Grid.Cell( Grid.SelectedRow, 3 ).Text, Ambiente.Connection )
+
+    ' Verificamos que la venta que se desea imprimir exista
+    if rstEncabezado.EOF Then
+       MsgBox "No existe la venta seleccionada",vbInformation
+       Exit Sub
+    end if 
+    
+    If Ambiente.rstEstacion("ventasportelefono") Then
+       ventasPorTelefono = True
+    Else
+       ventasPorTelefono = False
+    End if
+
+    If ventasPorTelefono Then
+       If clEmpty( "" & rstEncabezado("repartidor") ) Then
+          Exit Sub
+       End If
+    End If
+
+    ' Creamos el recordSet de las partidas que componen la venta
+    Set rstPartidas = Rst("SELECT partvta.articulo, partvta.id_salida, partvta.kit, prods.descrip, partvta.precio, partvta.cantidad, partvta.descuento, partvta.impuesto, partvta.preciobase, partvta.iespecial FROM partvta INNER JOIN prods ON prods.articulo = partvta.articulo WHERE venta =" & rstEncabezado.fields("Venta"), Ambiente.Connection )
+
+    ' Traemos todos los datos del cliente
+    Set rstCliente = Rst("SELECT * FROM clients WHERE cliente = '" & rstEncabezado.fields("Cliente") & "'", Ambiente.Connection )
+
+    ' Traemos los datos de cobranza si es que existe
+    Set rstCobranza = Rst( "SELECT * FROM cobranza WHERE venta = " & rstEncabezado("venta"), Ambiente.Connection )
+
+    cSalida = "" 
+    
+    'Esto abre el cajon de dinero
+    'if Ambiente.rstEstacion("Cajon") <> 0 Then 
+    '   cSalida = cSalida & Chr(27) & Chr(112) & Chr(48) & Chr(20) & Chr(20) 
+    '   cSalida = cSalida & Chr(7)
+    '   ' Sansung de inyección
+    '   ' cSalida = cSalida & Chr(27) & Chr(112) & Chr(48) & Chr(49)
+    'end if
+    
+    cSalida = cSalida & "C   L   I   E   N   T   E" & Chr(13) & Chr(10)
+    cSalida = cSalida & Chr(13) & Chr(10)
+    cSalida = cSalida & Ambiente.Empresa & Chr(13) & Chr(10)
+    cSalida = cSalida & Trim( Ambiente.Direccion1 ) & Chr(13) & Chr(10)
+    cSalida = cSalida & Trim( Ambiente.Direccion2 ) & Chr(13) & Chr(10)
+    cSalida = cSalida & Trim( Ambiente.Telefonos ) & Chr(13) & Chr(10)
+    cSalida = cSalida & Trim( rstEncabezado("Usuario") ) & " " & Trim( Ambiente.Estacion ) & " Cuenta sin cerrar: " & rstEncabezado("venta") & Chr(13) & Chr(10)
+    cSalida = cSalida & Formato( rstEncabezado("f_emision"),"dd-MM-yyyy" ) & " Hora: " & rstEncabezado("usuHora") & Chr(13) & Chr(10)
+    cSalida = cSalida & Trim( rstCliente("cliente") ) & " " & Trim( rstCliente("Nombre") ) & Chr(13) & Chr(10)
+    cSalida = cSalida & Trim( rstCliente("calle") ) & " " & Trim( rstCliente("colonia") ) & Chr(13) & Chr(10)
+    cSalida = cSalida & Trim( Ambiente.rstEstacion("leyendacomodin") ) & " " & rstEncabezado("comodin") & Chr(13) & Chr(10)
+    'cSalida = cSalida & "Vendedor: " & Trim( rstEncabezado("vend") ) & Chr(13) & Chr(10)
+    cSalida = cSalida & "CANT. DESCRIPCION        PRECIO  IMPORTE" & Chr(13) & Chr(10)
+
+    nImporteTotal = 0
+    nImpuesto = 0
+    nCantidadTotal = 0     
+    nDescuentoTotal = 0
+    nImporteOrigen = 0
+
+    While Not rstPartidas.EOF 
+
+          nPrecio = rstPartidas("Precio") * ( 1 - (rstPartidas("Descuento")/100) ) * (1 + ( rstPartidas("impuesto") / 100 ) )
+          nPrecioBase = Round( rstPartidas("PrecioBase") * (1 + ( rstPartidas("impuesto") / 100 ) ), 2)
+          nDescuento = (nPrecioBase - nPrecio) * rstPartidas("Cantidad")
+          'nDescPor = ( nPrecio / nPrecioBase ) * 100
+
+          nDescuentoTotal = nDescuentoTotal + nDescuento
+          nImporte = nPrecio * rstPartidas("Cantidad")
+
+          nCantidad = PadL(Formato( rstPartidas("cantidad"), "##,##" ),3)
+
+          cDescrip  = Mid( rstPartidas("Descrip"), 1, 16 )
+          nCantidadTotal = nCantidadTotal + rstPartidas("cantidad")
+
+          nImporteTotal = nImporteTotal + nImporte
+          nImpuesto = nImpuesto + ( nImporteTotal * ( rstPartidas("impuesto") / 100 ) )          
+
+          nPrecio = 0
+          nIEspecial = rstPartidas("Precio") * (Val2(rstPartidas("iespecial")) / 100)
+          nIVa = rstPartidas("Precio") * (rstPartidas("impuesto") / 100)
+          nPrecio = rstPartidas("Precio") + nIEspecial + nIVa
+
+          cPrecio = PadL(Trim(Formato( nPrecio,  Ambiente.FDinero )),8)
+          cImporte = PadL(Trim(Formato( Round( nPrecio,2) * rstPartidas("cantidad"), Ambiente.FDinero )),8)    
+          nPrecioOrigen = Round( rstPartidas("PrecioBase") * (1 + ( rstPartidas("impuesto") / 100 )),2) * rstPartidas("cantidad")
+          nImporteOrigen = nImporteOrigen + nPrecioOrigen
+
+          strSalida = PadL(Formato( nCantidad, Ambiente.Formato ),2) & " " & cDescrip & " " & cPrecio & "  " & cImporte
+
+          cSalida = cSalida & strSalida & Chr(13) & Chr(10)
+                                               
+          If rstPartidas("Kit") <> 0 Then
+             Set rstOpciones = CreaRecordSet( "SELECT partvtaopciones.articulo, prods.descrip FROM partvtaopciones INNER JOIN prods ON partvtaopciones.articulo = prods.articulo WHERE id_salida = " & rstPartidas("id_salida"), Ambiente.Connection )
+
+             While Not rstOpciones.EOF 
+                   cSalida = cSalida & "Opcion:" & rstOpciones("descrip") & Chr(13) & Chr(10) 
+                  rstOpciones.MoveNext
+             Wend
+          End If 
+
+          rstPartidas.MoveNext
+    Wend
+
+    cSalida = cSalida & Chr(13) & Chr(10) 
+    cSalida = cSalida & Chr(13) & Chr(10)    
+
+    'cSalida = cSalida & "         Importe:            " & PadL(Formato( Val2(rstEncabezado("importe")), Ambiente.FDinero ),10) & Chr(13) & Chr(10)
+    'cSalida = cSalida & "        Impuesto:            " & PadL(Formato( Val2(rstEncabezado("impuesto")), Ambiente.FDinero ),10) & Chr(13) & Chr(10)
+    'cSalida = cSalida & "     Impuesto 2%:            " & PadL(Formato( Val2(rstEncabezado("iespecial")), Ambiente.FDinero ),10) & Chr(13) & Chr(10)
+
+
+    'if nDescuentoTotal > 0 Then
+    '   cSalida = cSalida & "         Importe:            " & PadL(Formato( nImporteOrigen, Ambiente.FDinero ),10) & Chr(13) & Chr(10)
+    '   cSalida = cSalida & "       Descuento:            " & PadL(Formato( nDescuentoTotal, Ambiente.FDinero ),10) & Chr(13) & Chr(10)
+    'end if
+
+    cSalida = cSalida & "         Importe:            " & PadL(Formato( Val2(rstEncabezado("impuesto")) + Val2(rstEncabezado("importe")) + Val2(rstEncabezado("iespecial")), Ambiente.FDinero ),10) & Chr(13) & Chr(10)
+    'cSalida = cSalida & "        Redondeo:            " & PadL(Formato( Val2(rstEncabezado("Redondeo")), Ambiente.FDinero ),10) & Chr(13) & Chr(10)     
+    'cSalida = cSalida & Chr(13) & Chr(10)
+    cSalida = cSalida & PadL(Formato( nCantidadTotal, "###,###" ),4) & "  ----- TOTALES ----     " & PadL(Formato( (Val2(rstEncabezado("impuesto")) + Val2(rstEncabezado("importe")) + Val2(rstEncabezado("iespecial")) + Val2(rstEncabezado("redondeo"))), Ambiente.FDinero ),10) & Chr(13) & Chr(10)     
+
+    'nPagoTotal = Val2(rstEncabezado("Pago1")) + Val2(rstEncabezado("Pago2")) + Val2(rstEncabezado("Pago3"))
+
+    'if rstEncabezado("Pago1") > 0 Then
+    '   cSalida = cSalida & "                  Pago en " & rstEncabezado("Concepto1") & " " & PadL(Formato( Val2(rstEncabezado("Pago1")), Ambiente.FDinero ),9) & Chr(13) & Chr(10)
+    'end if 
+
+    'if rstEncabezado("Pago2") > 0 Then
+    '   cSalida = cSalida & "                  Pago en " & rstEncabezado("Concepto2") & " " & PadL(Formato( Val2(rstEncabezado("Pago2")), Ambiente.FDinero ),9) & Chr(13) & Chr(10)
+    'end if
+    
+    'if rstEncabezado("Pago3") > 0 Then
+    '   cSalida = cSalida & "                  Pago en " & rstEncabezado("Concepto3") & " " & PadL(Formato( Val2(rstEncabezado("Pago3")), Ambiente.FDinero ),9) & Chr(13) & Chr(10)     
+    'end if
+
+    Eventos
+
+    Set rstIngreso = CreaRecordSet( "SELECT SUM(importe) FROM flujo WHERE venta = " & Grid.Cell( Grid.SelectedRow, 3 ).Text & " AND ing_eg = 'I'", Ambiente.Connection )
+    Set rstEgreso = CreaRecordSet( "SELECT SUM(importe) FROM flujo WHERE venta = " & Grid.Cell( Grid.SelectedRow, 3 ).Text & " AND ing_eg = 'E'", Ambiente.Connection )
+
+    nPagoParcial = Val2(rstIngreso(0)) - Val2(rstEgreso(0))
+
+    cSalida = cSalida & "          Pagos parciales: " & Formato( nPagoParcial, Ambiente.FDinero ) & Chr(13) & Chr(10)
+    nPagoTotal = nPagoParcial
+
+    if nPagoTotal < (Val2(rstEncabezado("impuesto")) + Val2(rstEncabezado("importe")) + Val2(rstEncabezado("iespecial")) + Val2(rstEncabezado("redondeo"))) Then       
+       cSalida = cSalida & " *** ESTO ES LO QUE UD DEBE DE PAGAR *** " & Chr(13) & Chr(10)
+       cSalida = cSalida & "                            : " & PadL(Formato( Val2(rstEncabezado("impuesto")) + Val2(rstEncabezado("iespecial")) + Val2(rstEncabezado("importe")) + Val2(rstEncabezado("redondeo")) - nPagoTotal, Ambiente.FDinero ),9) & Chr(13) & Chr(10)     
+    else
+       cSalida = cSalida & "                      Cambio: " & PadL(Formato( nPagoTotal - Val2(rstEncabezado("impuesto")) - Val2(rstEncabezado("iespecial")) - Val2(rstEncabezado("importe")) - Val2(rstEncabezado("redondeo")), Ambiente.FDinero ),9) & Chr(13) & Chr(10)     
+    end if
+
+    If Grid.SelectedRow <= 0 Then
+		mymessage "Seleciona una cuenta"
+       Exit Sub
+    End If
+
+	set rstvta = CreaRecordset("Select *,DATEDIFF(day,ventas.f_emision,GETDATE()) as diasc, DATEDIFF(day,ventas.usufecha,GETDATE()) as diast from ventas where venta = '"&Grid.Cell( Grid.SelectedRow, 3 ).Text&"' and tipo_doc = 'PE' ",Ambiente.connection)     
+
+ 
+	if not rstvta.eof then
+		set rstcli = CreaRecordset("Select * from clients where cliente = '"&rstvta("cliente")&"' ",Ambiente.Connection)
+		set rstpagos = CreaRecordset ("Select * from flujo where venta ='"&rstvta("venta")&"'",Ambiente.Connection)
+		    LN = Chr(13) & Chr(10) 
+			s="" 
+		s=s&""&LN 
+		s=s&"  HISTORIAL DE PAGO DE: "&LN 
+		s=s&""&rstcli("nombre")&LN
+		s=s&" Fechace de consulta:  "&formato(date,"dd-mm-yyyy")&LN
+		s=s&" De la cuenta: "&rstvta("comodin3")&"    con verificador: "&rstvta("venta")&LN	
+		s=s&""&LN 
+		s=s&"     MONTO        TIPO-PAGO     FECHA"&LN
+while not rstpagos.eof 
+		s=s&"    $"&rstpagos("importe")&"             "&rstpagos("concepto2")&"       "&rstpagos("fecha")&LN 
+
+rstpagos.movenext
+wend
+		s=s&""&LN 
+		s=s&"Su apartado tiene "&rstvta("diasc")&" días sin movimiento"&LN 
+		s=s&"Su apartado tiene "&rstvta("diast")&" días desde su inicio"&LN 
+		s=s&""&LN 
+		s=s&""&LN
+end if
+    cSalida = cSalida & s
+    cSalida = cSalida & Chr(13) & Chr(10)
+    cSalida = cSalida & "***** GRACIAS POR SU COMPRA *****" & Chr(13) & Chr(10)
+    cSalida = cSalida & "  Este no es un ticket de compra " & Chr(13) & Chr(10)   
+    cSalida = cSalida & "Recuerde recoger su mercancia antes" & Chr(13) & Chr(10)
+    cSalida = cSalida & "de 30 días naturales despues de su " & Chr(13) & Chr(10)
+    cSalida = cSalida & "apartado, guarde este ticket en un " & Chr(13) & Chr(10)
+    cSalida = cSalida & "lugar seguro  inf:595 95 49966     " & Chr(13) & Chr(10)
+    cSalida = cSalida & Chr(13) & Chr(10)
+    cSalida = cSalida & Chr(13) & Chr(10)
+    cSalida = cSalida & Chr(13) & Chr(10)
+    cSalida = cSalida & Chr(13) & Chr(10)
+    cSalida = cSalida & Chr(13) & Chr(10)
+
+    ' Esto manda un corte de papel
+
+    if Ambiente.rstEstacion("ticketcorte") <> 0 Then
+       cSalida = cSalida & Chr(27) & Chr(105)        
+    end if
+
+
+
+    cArchivo = "C:\MKC\TICKETS\Apartado-" & rstEncabezado("venta")&"-"& Formato( rstEncabezado( "f_emision" ), "ddMMyyyy" ) & Formato( rstEncabezado( "usuhora" ), "hhmmss" ) & ".txt"
+    OutLine (cArchivo), cSalida 
+'mymessage ""&cSalida
+    Script.sendToPrinter Ambiente, (cSalida), prn.Pantalla 
+
+IF msgbox("Deseas reimprimir el Comprobante?",vbquestion+vbyesno,"Reimprimir Comprobante")= vbyes then
+     Script.sendToPrinter Ambiente, (cSalida), prn.Pantalla 
+end if
+'-------------cmesit envio a correo y generación de archivo txt   
+txtbody = "<html><head>"
+txtbody = txtbody & "<body align=""center"" style=""font-family:verdana;"">"
+txtbody = txtbody &"<p style=""text-align: center;""><span style=""font-size: 14pt; color: #808080;""><strong><span style=""font-family: verdana, geneva;"">Envio Automatico de comprobante de Abono en Apartado No:"&rstEncabezado("venta") &" Del Dia: "& Formato(rstEncabezado("f_emision"),"DD/MM/YYYY")& "</span></strong></span></p>"
+txtbody = txtbody &"<hr />    "
+txtbody = txtbody &"<p style=""text-align: center;""><span style=""font-size: 14pt; color: #000080;""><em><span style=""font-family: verdana, geneva;"">En este correo se adjunta el archivo de texto con la información de la venta realizada</span></em></span></p> "
+'txtbody = txtbody &"<p style=""text-align: center;""><span style=""color: #800000;""><strong><span style=""font-size: 12pt;"">&nbsp;<span style=""text-decoration: underline;"">- "&narchiv&" -</span></span></strong></span></p>"
+txtbody = txtbody &"<hr />   "
+txtbody = txtbody &"<p><span style=""font-size: 12pt;"">Si te interesa usar nuestro servicio de facturación visita <a href=""http://www.cmesit.com"" title=""Cmesit"">www.cmesit.com</a></span></p>"
+'txtbody = txtbody &"<p><span style=""font-size: 12pt;"">Si lo prefieres puedes visitar nuestra Fanpage&nbsp;<a href=""https://www.facebook.com/autoparteselahuehuete/"" title=""Fanpage Facebook"">@autoparteselahuehuete</a></span></p>"
+'txtbody = txtbody &"<p style=""text-align: right;""><span style=""color: #808080;"">Comunícate a nuestra línea de atención a clientes (01 55) 59 21 80 30</span><br /><span style=""color: #808080;"">Cotiza por nuestro Whatsapp +521 55 6815 9831</span><br /><span style=""color: #808080;"">También puedes responder este mensaje o escribir &nbsp;<a href=""mailto:contacto@autoparteselahuehuete.com?cc=autoparteselahuehuete@gmail.com&amp;subject=Respuesta%20desde%20correo%20de%20facturación"" style=""color: #808080;"" title=""Correo de contacto"">contacto@autoparteselahuehuete.com</a></span></p>"
+txtbody = txtbody & "</body></html>" 
+
+exit sub
+on error resume next
+Const fromEmail	= "boutiquemkc@gmail.com"
+Const password	= "Moda2018"
+'****END OF CONFIGURATION
+'***********
+
+Dim emailObj, emailConfig
+Set emailObj      = CreateObject("CDO.Message")
+emailObj.From     = fromEmail
+'emailObj.To       = trim(lcase(rstcorreo("correo")))  
+emailObj.To       = LCASE(Ambiente.email)
+emailObj.Subject  = "Apartado Cuenta: " & rstEncabezado("venta")
+emailObj.HTMLBody = txtbody
+emailObj.TextBody = "Apartado Cuenta: " & rstEncabezado("venta")
+
+emailObj.AddAttachment cArchivo
+    Set rstimages = Rst("SELECT partvta.articulo, prods.imagen FROM partvta INNER JOIN prods ON prods.articulo = partvta.articulo WHERE venta =" & rstEncabezado.fields("Venta"), Ambiente.Connection )
+while not rstimages.eof
+emailObj.AddAttachment rstimages("imagen") 
+rstimages.movenext 
+wend
+
+
+Set emailConfig = emailObj.Configuration
+emailConfig.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserver")       = "smtp.gmail.com"
+emailConfig.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserverport")   = 465
+emailConfig.Fields("http://schemas.microsoft.com/cdo/configuration/sendusing")        = 2
+emailConfig.Fields("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1
+emailConfig.Fields("http://schemas.microsoft.com/cdo/configuration/smtpusessl")       = true
+emailConfig.Fields("http://schemas.microsoft.com/cdo/configuration/sendusername")     = fromEmail
+emailConfig.Fields("http://schemas.microsoft.com/cdo/configuration/sendpassword")     = password
+emailConfig.Fields.Update
+
+emailObj.Send
+
+'		mrespuesta="El Documento No: "&Grid.Cell( Grid.SelectedRow, 2 ).Text & vbCrLf & "Se envió al correo electrónico de:"& vbCrLf & rstCliente("Nombre")& vbCrLf & "En la dirección de correo electrónico" & vbCrLf & trim(lcase(rstcorreo("correo")))
+
+'     msgbox mrespuesta,vbinformation+VBokonly,"Documento Procesado"
+Set emailobj	= nothing
+Set emailConfig	= nothing
+
+
+End SUB     
+
+
+

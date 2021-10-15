@@ -1,0 +1,327 @@
+E-Cliente
+
+Forma==11985==7935==-73485==2490====$$-$$DTPicker==1395==315==5125==2000==DTcumple====2$$-$$DBCombo==2500==315==1375==1750==DBNivel==Nivel==1$$-$$PictureBox==3150==1125==8125==0==piclogo====16$$-$$CheckBox==250==250==11250==2500==chkwhats====17$$-$$TextBox==6000==350==1375==1250==txtnombre====0$$-$$CommandButton==1500==1150==4500==50==cmdGcc==Cliente Nuevo==18$$-$$Label==660==195==120==1380==lblNombre==Nombre==19$$-$$Label==945==195==120==120==lblIdcard==Client Card==20$$-$$TextBox==3000==350==125==625==txtidcard====21$$-$$Label==450==195==255==1755==lbltipoCli==Nivel==22$$-$$Label==1020==195==4995==1620==lblcumple==Cumpleaños==23$$-$$PictureBox==480==480==7500==1750==pictel====24$$-$$TextBox==2400==350==8125==1875==txttel====3$$-$$PictureBox==480==480==7500==2375==piccel====25$$-$$PictureBox==480==480==7500==3000==picface====26$$-$$PictureBox==480==480==10625==2375==picwhats====27$$-$$PictureBox==480==480==7500==3625==piccorreo====28$$-$$TextBox==2400==350==8125==2500==txtcel====4$$-$$TextBox==3500==350==8125==3125==txtface====5$$-$$TextBox==3500==350==8125==3750==txtcorreo====6$$-$$PictureBox==480==480==7500==4250==piclike====29$$-$$Label==1575==195==8250==4380==lblrecomendaciones==Recomendaciones==30$$-$$PictureBox==480==480==6750==1625==Piccumple====31$$-$$Editor==4005==2125==7500==4875==Editor====7$$-$$Label==1230==195==120==2505==lblUservicio==Ultima Compra==32$$-$$CommandButton==960==1150==6500==50==cmdguarda==Guardar==8$$-$$PictureBox==7000==4125==250==2875==Gridservicio====33$$-$$
+
+Sub Form_Load ()
+
+me.backcolor = rgb (230,231,232)
+me.picture= LoadPicture("C:\Estetic\Back.jpg")
+piclogo.Picture = LoadPicture("C:\Estetic\productos\logo.jpg")
+piclogo.Autosize = true
+piclogo.Appearance = 0 
+piclogo.BorderStyle = 0 
+piclogo.backcolor = rgb(235,209,222)
+
+pictel.Picture = LoadPicture("C:\Estetic\tel.jpg")
+pictel.Autosize = true
+pictel.Appearance = 0 
+pictel.BorderStyle = 0 
+pictel.backcolor = rgb(235,209,222) 
+
+piccel.Picture = LoadPicture("C:\Estetic\cel.jpg")
+piccel.Autosize = true
+piccel.Appearance = 0 
+piccel.BorderStyle = 0 
+piccel.backcolor = rgb(205,225,233)
+
+picwhats.Picture = LoadPicture("C:\Estetic\whats.jpg")
+picwhats.Autosize = true
+picwhats.Appearance = 0 
+picwhats.BorderStyle = 0 
+picwhats.backcolor = rgb(205,225,233)
+
+picface.Picture = LoadPicture("C:\Estetic\face.jpg")
+picface.Autosize = true
+picface.Appearance = 0 
+picface.BorderStyle = 0 
+picface.backcolor = rgb(205,225,233)
+
+piccorreo.Picture = LoadPicture("C:\Estetic\correo.jpg")
+piccorreo.Autosize = true
+piccorreo.Appearance = 0 
+piccorreo.BorderStyle = 0 
+piccorreo.backcolor = rgb(205,225,233)
+
+piclike.Picture = LoadPicture("C:\Estetic\like.jpg")
+piclike.Autosize = true
+piclike.Appearance = 0 
+piclike.BorderStyle = 0 
+piclike.backcolor = rgb(205,225,233) 
+
+Piccumple.Picture = LoadPicture("C:\Estetic\cumple.jpg")
+Piccumple.Autosize = true
+Piccumple.Appearance = 0 
+Piccumple.BorderStyle = 0 
+Piccumple.backcolor = rgb(205,225,233)
+
+
+
+lblNombre.font="Lucida Calligraphy"
+lblNombre.font.size=11
+lblNombre.forecolor=RGB(168,0,70)
+
+lblIdcard.font="Lucida Calligraphy"
+lblIdcard.font.size=11
+lblIdcard.forecolor=RGB(168,0,70)
+
+lbltipoCli.font="Lucida Calligraphy"
+lbltipoCli.font.size=11
+lbltipoCli.forecolor=RGB(168,0,70) 
+
+lblcumple.font="Lucida Calligraphy"
+lblcumple.font.size=11
+lblcumple.forecolor=RGB(168,0,70)
+
+lblrecomendaciones.font="Lucida Calligraphy"
+lblrecomendaciones.font.size=11
+lblrecomendaciones.forecolor=RGB(168,0,70)
+
+
+chkwhats.backcolor= RGB(239,223,233)
+
+txtidcard.font="verdana"
+txtidcard.enabled=false
+txtnombre.font="verdana" 
+txtidcard.font="verdana" 
+txttel.font="verdana" 
+txtcel.font="verdana" 
+txtface.font="verdana" 
+txtcorreo.font="verdana" 
+
+cmdGcc.Picture = LoadPicture("C:\Estetic\card.jpg")
+cmdGcc.backcolor= RGB(239,223,233)
+
+cmdguarda.Picture = LoadPicture("C:\Estetic\images.jpg")
+cmdguarda.backcolor= RGB(239,223,233)
+
+DTcumple=Now()
+txtnombre.tabindex=0
+
+
+   Gridservicio.Visible = True  
+
+SET rsttipoc=CreaRecordset ("Select * from tipos",Ambiente.Connection)
+
+Set DBNivel.RowSource = rsttipoc 
+
+DBNivel.listfield="Descrip"
+
+call fillGrid()
+
+End Sub
+
+Sub Button_Click
+
+    Select Case ControlEvento.Tag
+           Case "cmdGcc"
+			call genera_cc 
+
+			case "cmdguarda"
+			     if GuardaDatos Then
+                   DescargaForma
+                End If
+
+	end select
+end sub
+
+sub genera_cc()
+
+cc=1&formato(date,"ddmmyyyy")&"1"
+
+set rstcliente = CreaRecordset ("Select max(cliente) from clients",Ambiente.connection)
+
+if  not rstcliente.eof then
+
+	if val2(cc)<val2(rstcliente(0)) then
+		cc=rstcliente(0)+1 
+
+			IF MSGBOX("¿Estas Seguro de Crear un cliente Nuevo? EL Numero de Tarjeta es:"&cc,32+vbyesno,"ALTA DE CLIENTE")=vbyes THEN
+					
+								txtidcard=cc
+								txtnombre.text=""
+								DBNivel.text=""
+								DTcumple=formato(DATE,"dd/mm/yyyy")
+								txttel.text=""
+								txtcel.text= ""
+								chkwhats.value=0
+								txtface.text= ""
+								txtcorreo.text= ""
+								Editor.text=""
+								TXTNOMBRE.SETFOCUS 
+			end if
+	
+	else
+	
+cc=1&formato(date,"ddmmyyyy")&"1"
+			IF MSGBOX("¿Estas Seguro de Crear un cliente Nuevo? EL Numero de Tarjeta es:"&cc,32+vbyesno,"ALTA DE CLIENTE")=vbyes THEN
+					
+								txtidcard=cc
+								txtnombre.text=""
+								DBNivel.text=""
+								DTcumple=formato(DATE,"dd/mm/yyyy")
+								txttel.text=""
+								txtcel.text= ""
+								chkwhats.value=0
+								txtface.text= ""
+								txtcorreo.text= ""
+								Editor.text=""
+								TXTNOMBRE.SETFOCUS 
+			end if
+	
+	end if
+
+
+end if
+
+exit sub
+
+end sub
+
+
+Sub Text_KeyDown()
+'----**** MyBusiness POS Generated  
+'----**** Date:  22-07-2008
+'----**** Time:  09:47:14
+'----**** User:  SUP   
+on error resume next
+  
+    If KeyCode = 40 Then
+       Select Case ControlEvento.Tag
+              Case "txtnombre"
+
+                   SetSessionValue Ambiente, "BUSCAR_CLIENTE", txtnombre.Text
+                   Script.RunForm "BUSQUEDACLIENTES2", Me, Ambiente,, True
+
+				SET rstCliente = CreaRecordset("Select * from clients where cliente = '"&"" & GetSessionValue( Ambiente, "BUSCAR_CLIENTE" )&"'",Ambiente.Connection)
+		        Set rsttipo = CreaRecordset("Select * from tipos where tipo = '"&rstCliente("tipo")&"'",Ambiente.Connection) 
+                if  not rstCliente.eof   then
+
+                  txtidcard = "" & GetSessionValue( Ambiente, "BUSCAR_CLIENTE" )
+					txtnombre.text=rstCliente("nombre")
+					DBNivel.text=rsttipo("Descrip")
+					DTcumple=formato(rstCliente("cumple"),"dd/mm/yyyy")
+					txttel.text= rstCliente("telefono")
+					txtcel.text=  rstCliente("contacto")
+					chkwhats.value=  rstCliente("whats")
+					txtface.text= rstCliente("url")
+					txtcorreo.text=  rstCliente("correo")
+					Editor.text=rstCliente("OBSERV")
+					else
+                    Msgbox "No se encontraron coincidencias en catálogo de Cliente", 16,"Sin coincidencias"
+						exit sub					
+                  end if
+  
+
+       end select
+	end if
+call fillGrid()
+end sub
+
+Function GuardaDatos()
+
+if question("Se añadira un nuevo cliente a la base de datos ¿Deseas Continuar?") = false then
+exit Function
+end if
+
+    Dim rstCliente 
+    Dim Query
+
+    If clEmpty( txtNombre ) Then
+       MyMessage "Es necesario que indique el nombre del cliente"
+		txtnombre.setfocus
+       Exit Function
+    End If 
+
+
+    Set rstCliente = CreaRecordSet( _
+    "SELECT * FROM clients WHERE cliente = '" & txtidcard & "'", _
+    Ambiente.Connection )
+
+
+    Set Query = NewQuery()
+    Set Query.Connection = Ambiente.Connection
+
+    If rstCliente.EOF Then       
+       Query.strState = "INSERT" 
+       Query.AddField "clients","cliente", txtidcard
+    Else
+       Query.strState = "UPDATE"
+       Query.Condition = "cliente = '" & txtidcard & "'"
+    End If
+	Set rsttipo = CreaRecordset("Select * from tipos where Descrip = '"&DBNivel.text&"'",Ambiente.Connection) 
+
+
+    
+    Query.AddField "clients","NOMBRE", txtnombre
+    Query.AddField "clients","TELEFONO", txttel
+    Query.AddField "clients","TIPO", rsttipo("tipo")
+    Query.AddField "clients","CONTACTO", txtcel
+    Query.AddField "clients","OBSERV", Editor.Text
+    Query.AddField "clients","CORREO", txtcorreo 
+    Query.AddField "clients","URL", txtface
+    Query.AddField "clients","USUHORA", Formato( Time, "hh:mm:ss" )
+    Query.AddField "clients","USUFECHA", Date 
+    Query.AddField "clients","whats", chkwhats.value
+
+
+
+    Query.CreateQuery
+    Query.Execute    
+
+    GuardaDatos = True       
+
+
+End Function
+
+Sub fillGrid()
+
+set rstvenpart =Crearecordset("select ventas.No_referen,partvta.cantidad,partvta.observ,vends.nombre,partvta.usufecha"&_
+" from  (partvta  inner join ventas on partvta.venta = ventas.venta) inner join vends on partvta.vend = Vends.vend"&_
+" where ventas.estado ='CO' and ventas.tipo_doc = 'REM' and ventas.ticket='1'  and cliente='"&txtidcard&"'",Ambiente.connection)
+
+    Gridservicio.Clear True
+    Gridservicio.AddColumn ,"Cnt"                , 0   ,,  40 
+    Gridservicio.AddColumn ,"Descripción"            , 0   ,,  200
+    Gridservicio.AddColumn ,"TK"              , 0   ,,  50  
+    Gridservicio.AddColumn ,"Estilista"              , 0   ,,  100 
+    Gridservicio.AddColumn ,"Fecha"              , 0   ,,  75
+
+
+    bolColor = True 
+
+    While Not rstvenpart.EOF 
+
+          Grid.AddRow           
+
+          If bolColor Then
+             intColor = RGB(250,223,233)
+             bolColor = False
+          Else
+             intColor = vbWhite
+             bolColor = True
+          End If                      
+
+'          If Not clEmpty( "" & rstvenpart("no_referen") ) Then
+'             intColor = vbCyan
+'          End If
+
+          Grid.CellDetails Grid.Rows, 01, rstvenpart("Cantidad"), 0
+          Grid.Cell( Grid.Rows, 01 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 02, rstvenpart("Observ"), 0
+          Grid.Cell( Grid.Rows, 02 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 03, rstvenpart("No_referen"), 0
+          Grid.Cell( Grid.Rows, 03 ).BackColor = intColor
+
+         Grid.CellDetails Grid.Rows, 04, rstvenpart("Nombre"), 0
+          Grid.Cell( Grid.Rows, 04 ).BackColor = intColor
+
+          Grid.CellDetails Grid.Rows, 05, rstvenpart("usuFecha"), 0
+          Grid.Cell( Grid.Rows, 05 ).BackColor = intColor
+
+          rstvenpart.MoveNext
+    Wend
+    
+end sub
+

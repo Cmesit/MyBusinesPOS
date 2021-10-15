@@ -1,0 +1,210 @@
+AGREGAUPC
+
+Forma==9315==2025==-72375==3630====$$-$$TextBox==2910==375==375==500==txtarticulo====2$$-$$CommandButton==1290==375==7125==500==cmdaplicar==Aplicar==0$$-$$Label==660==195==375==255==lblarticulo==Articulo==1$$-$$TextBox==2580==375==4125==500==txtupc====14$$-$$Label==1020==195==375==1005==lbldescrip==Descripcion==15$$-$$Label==390==195==4125==255==lblupc==UPC==16$$-$$
+'=======================================================================================
+'[[[CMESIT CONSULTORIA Y MANEJO DE ERRORES CON SOLUCIONES INFORMATICAS Y TECNOLOGICAS]]]
+'=======================================================================================
+'      DRISTRIBUCION DE SOLUCIONES INFORMATICAS Y TECNOLOGICAS cmesit@gmail.com
+'---------------------------------------------------------------------------------------
+'=== Forma para la Correcion de Precios segun la ultima compra y el ajuste de utilidad ==
+'===      segun porcentajes de 35 ,25  y 15 % para precios 1, 2 y 3 respectivamente   ==
+'---------------------------------------------------------------------------------------
+'|||||||| VERSION ||  1                       
+'||||||   FECHA ||||  27/09/2014                 
+'||DESARROLLADOR||||ING. ERNESTO GLEZ. (KIEMTO)
+'=======================================================================================
+' [[[[[[[[[[[[MODIFICADO]]]]]]]] 
+' [[[[[[VERSION ]]]]]] 
+' [[[[[ FECHA   ]]]]]]
+' [[ DESARROLLADOR ]]] 
+dim cierraauto
+    Me.Caption="Agrega Clave UPC by CMESIT"
+	Me.BackColor = RGB(30,144,255)
+	lblarticulo.Font="Futura Md BT"
+	lblarticulo.Fontsize=12
+	lblarticulo.ForeColor=vbwhite
+
+	lbldescrip.Font="Futura Md BT"
+	lbldescrip.Fontsize=12
+	lbldescrip.ForeColor=vbwhite
+
+	lblupc.Font="Futura Md BT"
+	lblupc.Fontsize=12
+	lblupc.ForeColor=vbwhite
+    
+	txtarticulo.Font="Futura Md BT"
+	txtarticulo.Fontsize=12 
+
+	txtupc.Font="Futura Md BT"
+	txtupc.Fontsize=12 
+
+	txtarticulo.tabindex=0
+    txtupc.tabindex=1
+	cmdaplicar.tabindex=2
+
+Sub Form_Load()
+
+If not ClEmpty(Ambiente.var8) then
+
+txtarticulo=Ambiente.var8
+txtupc=Ambiente.var7
+txtarticulo.enabled=0
+cierraauto="SI"
+else
+
+cierraauto="NO"
+end if
+End Sub
+
+
+Sub Button_Click
+
+call aplica_upc()
+call cerrar_auto()
+
+ 
+end Sub
+
+
+Sub Form_KeyDown()
+         
+    ' Cuando presionamos la tecla F5
+    if KeyCodeForm = 116 Then
+       GuardaDatos       
+       LimpiaCampos
+       Controles("txtarticulo").SetFocus 'Colocamos foco en artículo
+    end if
+
+
+
+End Sub
+
+Sub Text_KeyDown()
+    Dim rstProds,Busqueda
+
+    if ControlEvento.Tag = "txtarticulo" Then
+       If KeyCode = 40 Then
+          Set Busqueda = CreateObject ("MyBBusquedaArticulos.BusquedaArticulos")
+          Set Busqueda.Ambiente = Ambiente
+          Set Busqueda.Control = txtarticulo
+          Busqueda.MuestraForma
+          Set Busqueda = Nothing
+          txtarticulo.SetFocus
+          Exit Sub
+       End if
+    end if
+
+End Sub     
+
+Sub Text_LostFocus()
+
+Set rstclaveok = CreaRecordset ("Select articulo from clavesadd where clave = '"&txtarticulo&"' ",Ambiente.Connection)
+if  not rstclaveok.eof then
+txtarticulo= rstclaveok("articulo")
+end if
+
+
+if clEmpty(txtarticulo) or txtarticulo = "" then
+	msgbox "Introduce un Producto Valido"
+	exit sub
+end if
+
+    If ControlEvento.Tag = "txtarticulo" Then
+
+       Set rstProds = Rst ("SELECT * FROM prods WHERE articulo = '" & Controles("txtarticulo").Text &"'", Ambiente.Connection)
+
+		if not rstProds.eof then
+			txtarticulo.text= rstProds("articulo")
+			lbldescrip= rstProds("DESCRIP")
+		else
+
+			Msgbox "Articulo no Encontrado"  
+	    end if
+		Set rstclaveok = CreaRecordset ("Select clave from clavesadd where articulo = '"&txtarticulo&"' ",Ambiente.Connection)
+		if  not rstclaveok.eof then
+			txtupc= rstclaveok("clave")
+		ELSE
+			TXTUPC=""
+		end if
+
+ 	end if
+
+
+
+end sub
+
+Sub aplica_upc()
+
+set rstclaveadd= CreaRecordSet ("Select * from clavesadd where articulo = '"&TXTARTICULO&"' ",Ambiente.Connection)
+
+	if txtupc = "" or clEmpty(txtupc) then
+		msgbox "No introcuciste una clave"
+		exit sub  
+  	end if
+
+
+	if not clEmpty(txtupc) then
+		if question("Deseas Agregar o Modificar la Clave de Este Producto")= True then
+
+
+                    Set Query = NewQuery()    
+				    Set Query.Connection = Ambiente.Connection
+                    
+                   Query.Reset				
+
+			if rstclaveadd.eof then
+                   Query.strState = "INSERT"
+
+			else
+                   Query.strState = "UPDATE"
+				   Query.Condition = "clave = '" & rstclaveadd("CLAVE") & "'"
+
+			end if	
+                   Query.AddField "clavesadd","Clave",txtupc
+                   Query.AddField "clavesadd","Dato1", ""
+                   Query.AddField "clavesadd","Usuario", Ambiente.Uid
+                   Query.AddField "clavesadd","usuFecha", Date
+				   Query.AddField "clavesadd","usuHora", Formato( Time, "hh:mm:ss" )
+                   Query.AddField "clavesadd","Dato2", ""
+                   Query.AddField "clavesadd","Articulo",TXTARTICULO
+                   Query.AddField "clavesadd","Cantidad", 1
+
+					Query.AddField "clavesadd","Unidad","PZA"
+
+                   If bolAfectaInventario = True Then
+                      Query.AddField "clavesadd","Existencia", 0
+                   End If
+                   
+                   Query.AddField "clavesadd","Libre", 0
+                   Query.AddField "clavesadd","Exportado", 0
+                   Query.AddField "clavesadd","Precio", 0
+                   Query.AddField "clavesadd","imagen", ""
+                   Query.AddField "clavesadd","etiquetas", 0
+                   Query.CreateQuery
+                   Query.Execute
+
+		end if  
+  	end if
+
+End Sub  
+
+Sub Form_Unload()
+
+Ambiente.Var8=""
+
+End Sub
+
+sub cerrar_auto()
+
+if cierraauto = "SI" then
+
+Ambiente.var8=""
+descargaforma
+end if
+
+end sub
+
+
+
+
+
